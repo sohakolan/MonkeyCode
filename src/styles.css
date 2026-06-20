@@ -1611,3 +1611,13 @@ kbd {
   font-size: 12px;
   margin-top: 8px;
 }
+
+/* confettis ----------------------------------------------------------------- */
+.confetti {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 40;
+}

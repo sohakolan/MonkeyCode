@@ -2,6 +2,7 @@ import type { RunResult } from './types'
 import { LANG_LABEL } from './types'
 import type { RunReward } from './player'
 import { rankFor } from './progression'
+import Confetti from './Confetti'
 
 function Sparkline({ samples }: { samples: number[] }) {
   if (samples.length < 2) return null
@@ -58,8 +59,10 @@ interface Props {
 
 export default function Results({ result, isRecord, snippetTitle, reward }: Props) {
   const isRewrite = result.game === 'rewrite'
+  const celebrate = isRecord || Boolean(reward?.leveledUp)
   return (
     <div className="results">
+      {celebrate && <Confetti />}
       <div className="results-badges">
         {isRecord && <div className="record-badge">★ nouveau record</div>}
         {reward?.leveledUp && (
