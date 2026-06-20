@@ -890,6 +890,18 @@ export const SPRINT: RewriteSnippet[] = [
   { id: 'sp-go-2', lang: 'go', title: 'range', code: `for i, v := range items {\n    fmt.Println(i, v)\n}` },
   { id: 'sp-go-3', lang: 'go', title: 'make', code: `cache := make(map[string]int)` },
   { id: 'sp-go-4', lang: 'go', title: 'append', code: `out = append(out, item)` },
+  { id: 'sp-ts-7', lang: 'ts', title: 'find', code: `const found = users.find((u) => u.id === id)` },
+  { id: 'sp-ts-8', lang: 'ts', title: 'sort', code: `const sorted = [...nums].sort((a, b) => a - b)` },
+  { id: 'sp-ts-9', lang: 'ts', title: 'entries', code: `for (const [key, value] of Object.entries(obj)) {` },
+  { id: 'sp-py-6', lang: 'py', title: 'zip', code: `pairs = list(zip(keys, values))` },
+  { id: 'sp-py-7', lang: 'py', title: 'sorted', code: `top = sorted(items, key=lambda x: x.score, reverse=True)` },
+  { id: 'sp-py-8', lang: 'py', title: 'get', code: `count = counts.get(key, 0) + 1` },
+  { id: 'sp-rs-5', lang: 'rs', title: 'filter', code: `let evens: Vec<i32> = nums.into_iter().filter(|n| n % 2 == 0).collect();` },
+  { id: 'sp-rs-6', lang: 'rs', title: 'unwrap_or', code: `let port = env::var("PORT").unwrap_or_else(|_| "8080".into());` },
+  { id: 'sp-rs-7', lang: 'rs', title: 'vec', code: `let mut stack: Vec<i32> = Vec::new();` },
+  { id: 'sp-go-5', lang: 'go', title: 'defer', code: `defer file.Close()` },
+  { id: 'sp-go-6', lang: 'go', title: 'sort', code: `sort.Slice(items, func(i, j int) bool {\n    return items[i].N < items[j].N\n})` },
+  { id: 'sp-go-7', lang: 'go', title: 'goroutine', code: `go func() {\n    results <- compute(job)\n}()` },
 ]
 
 /** Tire un snippet court de sprint pour une langue, en évitant le précédent. */
