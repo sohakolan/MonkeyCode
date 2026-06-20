@@ -465,34 +465,38 @@ export default function App() {
           )}
         </nav>
 
-        <button
-          className="daily-btn"
-          onClick={() => setSprintOpen(true)}
-          title="sprint — enchaîne un max de snippets courts en 60 secondes"
-        >
-          ▶ sprint
-        </button>
+        <div className="topbar-right">
+          <div className="topbar-actions">
+            <button
+              className="daily-btn"
+              onClick={() => setSprintOpen(true)}
+              title="sprint — enchaîne un max de snippets courts en 60 secondes"
+            >
+              ▶ sprint
+            </button>
 
-        {Object.keys(player.weakKeys).length > 0 && (
-          <button
-            className="daily-btn"
-            onClick={() => playDrill(player.weakKeys)}
-            title="drill — exercice ciblé sur tes touches les plus faibles"
-          >
-            ◎ drill
-          </button>
-        )}
+            {Object.keys(player.weakKeys).length > 0 && (
+              <button
+                className="daily-btn"
+                onClick={() => playDrill(player.weakKeys)}
+                title="drill — exercice ciblé sur tes touches les plus faibles"
+              >
+                ◎ drill
+              </button>
+            )}
 
-        <button
-          className={`daily-btn ${dailyReady ? 'ready' : ''}`}
-          onClick={playDaily}
-          title="défi du jour — même exercice pour tout le monde, bonus une fois par jour"
-        >
-          ⚡ défi du jour
-          {dailyReady && <span className="daily-dot" />}
-        </button>
+            <button
+              className={`daily-btn ${dailyReady ? 'ready' : ''}`}
+              onClick={playDaily}
+              title="défi du jour — même exercice pour tout le monde, bonus une fois par jour"
+            >
+              ⚡ défi du jour
+              {dailyReady && <span className="daily-dot" />}
+            </button>
+          </div>
 
-        <Hud player={player} onOpenProfile={() => setProfileOpen(true)} />
+          <Hud player={player} onOpenProfile={() => setProfileOpen(true)} />
+        </div>
       </header>
 
       <div
