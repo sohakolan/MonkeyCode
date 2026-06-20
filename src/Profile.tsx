@@ -8,6 +8,7 @@ import { THEMES } from './themes'
 import { CLOUD_ENABLED } from './cloudEnv'
 import CloudAccount from './CloudAccount'
 import Leaderboard from './Leaderboard'
+import KeyboardHeatmap from './KeyboardHeatmap'
 
 type Tab = 'stats' | 'succes' | 'themes' | 'classement' | 'compte'
 
@@ -129,6 +130,7 @@ function StatsTab({ player }: { player: PlayerState }) {
           </span>
         ))}
       </div>
+      <KeyboardHeatmap weak={player.weakKeys} />
       <WeakKeys weak={player.weakKeys} />
     </div>
   )
