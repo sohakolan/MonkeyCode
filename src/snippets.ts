@@ -724,6 +724,41 @@ func hasZero(values []int) bool {
   },
 ]
 
+// ---------------------------------------------------------------------------
+// Sprint : courts snippets one/two-liners enchaînés en time-attack.
+// ---------------------------------------------------------------------------
+
+export const SPRINT: RewriteSnippet[] = [
+  { id: 'sp-ts-1', lang: 'ts', title: 'map', code: `const ids = users.map((u) => u.id)` },
+  { id: 'sp-ts-2', lang: 'ts', title: 'filter', code: `const live = items.filter((i) => i.active)` },
+  { id: 'sp-ts-3', lang: 'ts', title: 'reduce', code: `const total = nums.reduce((a, b) => a + b, 0)` },
+  { id: 'sp-ts-4', lang: 'ts', title: 'guard', code: `if (!user) throw new Error('not found')` },
+  { id: 'sp-ts-5', lang: 'ts', title: 'await', code: `const res = await fetch(\`/api/\${id}\`)` },
+  { id: 'sp-ts-6', lang: 'ts', title: 'ternary', code: `const label = count > 0 ? 'on' : 'off'` },
+  { id: 'sp-py-1', lang: 'py', title: 'comp', code: `squares = [n * n for n in range(10)]` },
+  { id: 'sp-py-2', lang: 'py', title: 'dict', code: `by_id = {u.id: u for u in users}` },
+  { id: 'sp-py-3', lang: 'py', title: 'guard', code: `if not user:\n    raise ValueError("not found")` },
+  { id: 'sp-py-4', lang: 'py', title: 'enumerate', code: `for i, item in enumerate(items):\n    print(i, item)` },
+  { id: 'sp-py-5', lang: 'py', title: 'with', code: `with open(path) as f:\n    data = f.read()` },
+  { id: 'sp-rs-1', lang: 'rs', title: 'iter', code: `let sum: i32 = nums.iter().sum();` },
+  { id: 'sp-rs-2', lang: 'rs', title: 'map', code: `let ids: Vec<_> = users.iter().map(|u| u.id).collect();` },
+  { id: 'sp-rs-3', lang: 'rs', title: 'match', code: `match res {\n    Ok(v) => v,\n    Err(e) => return Err(e),\n}` },
+  { id: 'sp-rs-4', lang: 'rs', title: 'let', code: `let Some(user) = find(id) else { return };` },
+  { id: 'sp-go-1', lang: 'go', title: 'iferr', code: `if err != nil {\n    return err\n}` },
+  { id: 'sp-go-2', lang: 'go', title: 'range', code: `for i, v := range items {\n    fmt.Println(i, v)\n}` },
+  { id: 'sp-go-3', lang: 'go', title: 'make', code: `cache := make(map[string]int)` },
+  { id: 'sp-go-4', lang: 'go', title: 'append', code: `out = append(out, item)` },
+]
+
+/** Tire un snippet court de sprint pour une langue, en évitant le précédent. */
+export function pickSprint(lang: Lang, excludeId?: string) {
+  const pool = SPRINT.filter((s) => s.lang === lang && s.id !== excludeId)
+  const all = pool.length ? pool : SPRINT.filter((s) => s.lang === lang)
+  const fallback = all.length ? all : SPRINT
+  const s = fallback[Math.floor(Math.random() * fallback.length)]
+  return { id: s.id, title: s.title, start: '', target: s.code }
+}
+
 /** Jour local au format YYYY-MM-DD (sert de graine au défi du jour). */
 export function dailyKey(): string {
   const d = new Date()

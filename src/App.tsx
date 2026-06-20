@@ -4,6 +4,7 @@ import TargetPanel from './TargetPanel'
 import Results from './Results'
 import Hud from './Hud'
 import Profile from './Profile'
+import Sprint from './Sprint'
 import { usePlayer, dailyAvailable, type RunReward } from './player'
 import { CLOUD_ENABLED } from './cloudEnv'
 import CloudSync from './CloudSync'
@@ -117,8 +118,11 @@ export default function App() {
   const [isRecord, setIsRecord] = useState(false)
   const [reward, setReward] = useState<RunReward | null>(null)
   const [profileOpen, setProfileOpen] = useState(false)
+  const [sprintOpen, setSprintOpen] = useState(false)
+  const sprintOpenRef = useRef(sprintOpen)
+  sprintOpenRef.current = sprintOpen
 
-  const { player, recordRun, buyTheme, equipTheme } = usePlayer()
+  const { player, recordRun, buyTheme, equipTheme, awardSprint } = usePlayer()
   const recordRunRef = useRef(recordRun)
   recordRunRef.current = recordRun
 
@@ -336,6 +340,7 @@ export default function App() {
   // Raccourcis globaux.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (sprintOpenRef.current) return // le sprint gère ses propres touches
       const mod = e.metaKey || e.ctrlKey
       if (mod && e.key === 'Enter') {
         e.preventDefault()
@@ -451,6 +456,14 @@ export default function App() {
             </button>
           )}
         </nav>
+
+        <button
+          className="daily-btn"
+          onClick={() => setSprintOpen(true)}
+          title="sprint — enchaîne un max de snippets courts en 60 secondes"
+        >
+          ▶ sprint
+        </button>
 
         <button
           className={`daily-btn ${dailyReady ? 'ready' : ''}`}
@@ -572,6 +585,10 @@ export default function App() {
           equipTheme={equipTheme}
           onClose={() => setProfileOpen(false)}
         />
+      )}
+
+      {sprintOpen && (
+        <Sprint config={config} onAward={awardSprint} onClose={() => setSprintOpen(false)} />
       )}
     </div>
   )

@@ -232,6 +232,7 @@ export interface PlayerApi {
   ) => RunReward
   buyTheme: (id: string) => boolean
   equipTheme: (id: string) => void
+  awardSprint: (xp: number, coins: number) => void
 }
 
 export function usePlayer(): PlayerApi {
@@ -285,5 +286,25 @@ export function usePlayer(): PlayerApi {
     setPlayer(next)
   }, [])
 
-  return { player, recordRun, buyTheme, equipTheme }
+  const awardSprint = useCallback((xp: number, coins: number) => {
+    const p = ref.current
+    const today = todayLocal()
+    let streak = p.streak
+    if (p.lastPlayedDay !== today) {
+      const gap = p.lastPlayedDay ? dayDiff(p.lastPlayedDay, today) : 999
+      streak = gap === 1 ? p.streak + 1 : 1
+    }
+    const next = {
+      ...p,
+      xp: p.xp + xp,
+      coins: p.coins + coins,
+      streak,
+      bestStreak: Math.max(p.bestStreak, streak),
+      lastPlayedDay: today,
+    }
+    ref.current = next
+    setPlayer(next)
+  }, [])
+
+  return { player, recordRun, buyTheme, equipTheme, awardSprint }
 }
