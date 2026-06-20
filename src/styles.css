@@ -1621,3 +1621,94 @@ kbd {
   pointer-events: none;
   z-index: 40;
 }
+
+/* onboarding ---------------------------------------------------------------- */
+.onb {
+  position: relative;
+  width: min(560px, 100%);
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  border-radius: 18px;
+  padding: 30px 30px 26px;
+  box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.9);
+  animation: rise 0.32s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+
+.onb-logo {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 24px;
+  letter-spacing: -0.5px;
+  color: var(--fg);
+}
+
+.onb-lead {
+  margin: 8px 0 22px;
+  color: var(--ink);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+.onb-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.onb-step {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.onb-glyph {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.1);
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
+  border-radius: 11px;
+}
+
+.onb-step-title {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 13.5px;
+  color: var(--fg);
+  margin-bottom: 2px;
+}
+
+.onb-step-text {
+  font-size: 12.5px;
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+.onb-cta {
+  appearance: none;
+  margin-top: 26px;
+  width: 100%;
+  border: none;
+  background: var(--accent);
+  color: var(--bg);
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 14px;
+  padding: 12px 0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: filter 0.15s ease, transform 0.1s ease;
+}
+
+.onb-cta:hover {
+  filter: brightness(1.08);
+}
+
+.onb-cta:active {
+  transform: translateY(1px);
+}

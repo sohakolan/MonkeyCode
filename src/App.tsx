@@ -5,6 +5,9 @@ import Results from './Results'
 import Hud from './Hud'
 import Profile from './Profile'
 import Sprint from './Sprint'
+import Onboarding from './Onboarding'
+
+const ONBOARDED_KEY = 'monkeycode.onboarded.v1'
 import { usePlayer, dailyAvailable, type RunReward } from './player'
 import { loadHistory, saveHistory } from './history'
 import { CLOUD_ENABLED } from './cloudEnv'
@@ -111,6 +114,9 @@ export default function App() {
   const [reward, setReward] = useState<RunReward | null>(null)
   const [profileOpen, setProfileOpen] = useState(false)
   const [sprintOpen, setSprintOpen] = useState(false)
+  const [showOnboarding, setShowOnboarding] = useState(
+    () => !localStorage.getItem(ONBOARDED_KEY),
+  )
   const sprintOpenRef = useRef(sprintOpen)
   sprintOpenRef.current = sprintOpen
 
@@ -600,6 +606,15 @@ export default function App() {
 
       {sprintOpen && (
         <Sprint config={config} onAward={awardSprint} onClose={() => setSprintOpen(false)} />
+      )}
+
+      {showOnboarding && (
+        <Onboarding
+          onClose={() => {
+            localStorage.setItem(ONBOARDED_KEY, '1')
+            setShowOnboarding(false)
+          }}
+        />
       )}
     </div>
   )
