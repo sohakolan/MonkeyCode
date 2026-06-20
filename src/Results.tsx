@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { RunResult } from './types'
 import { LANG_LABEL } from './types'
 import type { RunReward } from './player'
@@ -60,6 +61,22 @@ interface Props {
 export default function Results({ result, isRecord, snippetTitle, reward }: Props) {
   const isRewrite = result.game === 'rewrite'
   const celebrate = isRecord || Boolean(reward?.leveledUp)
+
+  const [copied, setCopied] = useState(false)
+  const share = () => {
+    const kbd = result.ide ? `${result.input}+ide` : result.input
+    const summary = isRewrite
+      ? `monkey_code · ${Math.round(result.wpm)} wpm · ${(result.accuracy * 100).toFixed(0)}% · ${LANG_LABEL[result.lang]} ${snippetTitle} · ${kbd}`
+      : `monkey_code · ${fmtTime(result.timeMs)} · ${LANG_LABEL[result.lang]} ${snippetTitle} · ${kbd}`
+    navigator.clipboard
+      ?.writeText(summary)
+      .then(() => {
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
+      })
+      .catch(() => {})
+  }
+
   return (
     <div className="results">
       {celebrate && <Confetti />}
@@ -126,6 +143,10 @@ export default function Results({ result, isRecord, snippetTitle, reward }: Prop
       )}
 
       {isRewrite && <Sparkline samples={result.samples} />}
+
+      <button className={`share-btn ${copied ? 'done' : ''}`} onClick={share}>
+        {copied ? '✓ copié dans le presse-papier' : '⧉ partager le résultat'}
+      </button>
 
       <div className="results-hint">
         <kbd>↵</kbd> exercice suivant&ensp;·&ensp;<kbd>⌫</kbd> rejouer celui-ci
