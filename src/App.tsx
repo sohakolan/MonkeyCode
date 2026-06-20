@@ -6,6 +6,7 @@ import Hud from './Hud'
 import Profile from './Profile'
 import Sprint from './Sprint'
 import { usePlayer, dailyAvailable, type RunReward } from './player'
+import { loadHistory, saveHistory } from './history'
 import { CLOUD_ENABLED } from './cloudEnv'
 import CloudSync from './CloudSync'
 import { playKey, playError, playFinish } from './sound'
@@ -22,7 +23,6 @@ import type { Challenge, Config, GameMode, InputMode, Lang, RunResult } from './
 import { LANG_LABEL } from './types'
 
 const CONFIG_KEY = 'monkeycode.config.v1'
-const HISTORY_KEY = 'monkeycode.history.v1'
 
 const DEFAULT_CONFIG: Config = {
   game: 'rewrite',
@@ -38,14 +38,6 @@ function loadConfig(): Config {
     return { ...DEFAULT_CONFIG, ...JSON.parse(localStorage.getItem(CONFIG_KEY) ?? '{}') }
   } catch {
     return DEFAULT_CONFIG
-  }
-}
-
-function loadHistory(): RunResult[] {
-  try {
-    return JSON.parse(localStorage.getItem(HISTORY_KEY) ?? '[]')
-  } catch {
-    return []
   }
 }
 
@@ -249,7 +241,7 @@ export default function App() {
         : comparable.every((h) => h.timeMs > res.timeMs))
 
     history.push(res)
-    localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(-200)))
+    saveHistory(history)
 
     if (c.game === 'rewrite') {
       const timeline: GhostTimeline = {

@@ -9,6 +9,7 @@ import { CLOUD_ENABLED } from './cloudEnv'
 import CloudAccount from './CloudAccount'
 import Leaderboard from './Leaderboard'
 import KeyboardHeatmap from './KeyboardHeatmap'
+import ProgressChart from './ProgressChart'
 
 type Tab = 'stats' | 'succes' | 'themes' | 'classement' | 'compte'
 
@@ -129,6 +130,9 @@ function StatsTab({ player }: { player: PlayerState }) {
             {r.glyph} {r.name}
           </span>
         ))}
+      </div>
+      <div className="prof-chart-wrap">
+        <ProgressChart />
       </div>
       <KeyboardHeatmap weak={player.weakKeys} />
       <WeakKeys weak={player.weakKeys} />
