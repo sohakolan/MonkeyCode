@@ -11,6 +11,12 @@ npm run dev
 
 - **réécrire** — recopie un snippet de zéro. Le panneau cible se colore au fil de la frappe (juste / faux / restant), les erreurs sont soulignées en rouge dans l'éditeur. Stats : wpm, précision, erreurs, régularité + courbe de wpm.
 - **modifier** — pars d'un code existant et transforme-le pour qu'il corresponde à la cible (arrow functions, async/await, early returns, iterators…). Chaque ligne conforme se coche en temps réel. Stats : temps, frappes, frappes/min.
+- **sprint** ▶ — time-attack 60 s : enchaîne un max de snippets courts, combo de score, record personnel par langage. Overlay isolé (`src/Sprint.tsx`).
+
+## Défis & course
+
+- **défi du jour** ⚡ — même exercice pour tout le monde un jour donné (choisi de façon déterministe), **bonus une fois par jour**. `src/snippets.ts:pickDaily`.
+- **course contre ton ghost** — en réécriture, un marqueur fantôme rejoue la progression de ton meilleur run sur la même cible ; indicateur ▲ avance / ▼ retard en direct. `src/ghost.ts`.
 
 ## Clavier
 
@@ -31,7 +37,8 @@ TypeScript, Python, Rust, Go — snippets de réécriture et exercices de refact
 
 ## Persistance
 
-Config et historique des runs (records inclus) en localStorage.
+Tout en localStorage tant que Convex n'est pas lié : config, historique des runs,
+profil de progression, ghosts et records de sprint (clés `monkeycode.*`, listées dans `src/data.ts`).
 
 ## Comptes, progression & récompenses
 
@@ -44,6 +51,17 @@ L'app fonctionne **100 % en local** (localStorage) tant qu'aucun backend n'est l
 - **Profil** — clique le HUD (en haut à droite) : stats, succès, thèmes, compte.
 
 Tout est animé sur l'écran de résultats (XP, level-up, succès débloqués).
+
+## Analytics & feedback
+
+- **touches faibles** — chaque erreur est attribuée au caractère cible attendu ; le profil affiche tes caractères les plus ratés (décote du passé pour refléter le présent) + une **carte de chaleur clavier**. `src/achievements.ts` n.b. data dans `player.weakKeys`.
+- **progression wpm** — courbe de tes 30 derniers runs (dernier / moyenne / record). `src/ProgressChart.tsx`.
+- **son** 🔊 — retour audio synthétisé (Web Audio, zéro asset) : clic de touche, blip d'erreur, accord de fin. Toggle `son` dans la barre de config. `src/sound.ts`.
+
+## Données
+
+Onglet **compte** du profil : **exporter** / **importer** (JSON) / **réinitialiser** toute ta
+progression locale — pour migrer entre navigateurs ou ne rien perdre avant Convex. `src/data.ts`.
 
 ## Backend Convex (serverless, prêt à brancher)
 
