@@ -325,6 +325,96 @@ func (s *Stack[T]) Pop() (T, bool) {
     return counts
 }`,
   },
+  {
+    id: 'ts-pipe',
+    lang: 'ts',
+    title: 'pipe',
+    code: `function pipe<T>(...fns: Array<(x: T) => T>) {
+  return (input: T) => fns.reduce((acc, fn) => fn(acc), input)
+}`,
+  },
+  {
+    id: 'ts-retry',
+    lang: 'ts',
+    title: 'retry',
+    code: `async function retry<T>(fn: () => Promise<T>, times: number): Promise<T> {
+  let last: unknown
+  for (let i = 0; i < times; i++) {
+    try {
+      return await fn()
+    } catch (err) {
+      last = err
+    }
+  }
+  throw last
+}`,
+  },
+  {
+    id: 'py-chunked',
+    lang: 'py',
+    title: 'chunked',
+    code: `def chunked(items, size):
+    for i in range(0, len(items), size):
+        yield items[i : i + size]`,
+  },
+  {
+    id: 'py-flatten',
+    lang: 'py',
+    title: 'flatten',
+    code: `def flatten(nested):
+    return [x for row in nested for x in row]`,
+  },
+  {
+    id: 'rs-window',
+    lang: 'rs',
+    title: 'moving_average',
+    code: `fn moving_average(xs: &[f64], k: usize) -> Vec<f64> {
+    xs.windows(k).map(|w| w.iter().sum::<f64>() / k as f64).collect()
+}`,
+  },
+  {
+    id: 'rs-wordcount',
+    lang: 'rs',
+    title: 'word_count',
+    code: `fn word_count(text: &str) -> HashMap<&str, usize> {
+    let mut counts = HashMap::new();
+    for word in text.split_whitespace() {
+        *counts.entry(word).or_insert(0) += 1;
+    }
+    counts
+}`,
+  },
+  {
+    id: 'go-unique',
+    lang: 'go',
+    title: 'unique',
+    code: `func unique(items []string) []string {
+    seen := make(map[string]struct{})
+    out := []string{}
+    for _, item := range items {
+        if _, ok := seen[item]; ok {
+            continue
+        }
+        seen[item] = struct{}{}
+        out = append(out, item)
+    }
+    return out
+}`,
+  },
+  {
+    id: 'go-maxby',
+    lang: 'go',
+    title: 'max_by',
+    code: `func maxBy[T any](items []T, key func(T) int) T {
+    best := items[0]
+    for _, item := range items[1:] {
+        if key(item) > key(best) {
+            best = item
+        }
+    }
+    return best
+}`,
+  },
 ]
 
 // ---------------------------------------------------------------------------
