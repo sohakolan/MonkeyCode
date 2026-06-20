@@ -812,6 +812,58 @@ func hasZero(values []int) bool {
     return data, nil
 }`,
   },
+  {
+    id: 'ts-loop-map',
+    lang: 'ts',
+    title: 'loop → map',
+    hint: 'remplace la boucle for par un .map',
+    before: `const doubled = []
+for (let i = 0; i < nums.length; i++) {
+  doubled.push(nums[i] * 2)
+}`,
+    after: `const doubled = nums.map((n) => n * 2)`,
+  },
+  {
+    id: 'py-loop-comp',
+    lang: 'py',
+    title: 'loop → comprehension',
+    hint: 'boucle + append → compréhension de liste',
+    before: `result = []
+for n in nums:
+    if n % 2 == 0:
+        result.append(n)`,
+    after: `result = [n for n in nums if n % 2 == 0]`,
+  },
+  {
+    id: 'rs-loop-sum',
+    lang: 'rs',
+    title: 'loop → sum',
+    hint: 'accumulation manuelle → iterator sum',
+    before: `let mut total = 0;
+for n in &nums {
+    total += n;
+}`,
+    after: `let total: i32 = nums.iter().sum();`,
+  },
+  {
+    id: 'go-else-early',
+    lang: 'go',
+    title: 'else → early return',
+    hint: 'supprime le else au profit d\'un early return',
+    before: `func classify(n int) string {
+    if n > 0 {
+        return "positive"
+    } else {
+        return "non-positive"
+    }
+}`,
+    after: `func classify(n int) string {
+    if n > 0 {
+        return "positive"
+    }
+    return "non-positive"
+}`,
+  },
 ]
 
 // ---------------------------------------------------------------------------
