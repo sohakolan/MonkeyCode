@@ -10,7 +10,7 @@ import { loadHistory, saveHistory } from './history'
 import { CLOUD_ENABLED } from './cloudEnv'
 import CloudSync from './CloudSync'
 import { playKey, playError, playFinish } from './sound'
-import { pickChallenge, pickDaily, dailyKey } from './snippets'
+import { pickChallenge, pickDaily, pickDrill, dailyKey } from './snippets'
 import {
   ghostKey,
   loadGhost,
@@ -167,6 +167,15 @@ export default function App() {
     setConfig((cfg) => ({ ...cfg, game: 'rewrite', lang }))
     reset(challenge, true)
   }, [reset])
+
+  const playDrill = useCallback(
+    (weak: Record<string, number>) => {
+      const c = configRef.current
+      setConfig((cfg) => ({ ...cfg, game: 'rewrite' }))
+      reset(pickDrill(c.lang, weak, challengeRef.current.id))
+    },
+    [reset],
+  )
 
   const applyConfig = useCallback(
     (patch: Partial<Config>) => {
@@ -456,6 +465,16 @@ export default function App() {
         >
           ▶ sprint
         </button>
+
+        {Object.keys(player.weakKeys).length > 0 && (
+          <button
+            className="daily-btn"
+            onClick={() => playDrill(player.weakKeys)}
+            title="drill — exercice ciblé sur tes touches les plus faibles"
+          >
+            ◎ drill
+          </button>
+        )}
 
         <button
           className={`daily-btn ${dailyReady ? 'ready' : ''}`}

@@ -849,6 +849,33 @@ export function pickSprint(lang: Lang, excludeId?: string) {
   return { id: s.id, title: s.title, start: '', target: s.code }
 }
 
+/**
+ * Drill adaptatif : choisit l'exercice de réécriture le plus riche en TES
+ * caractères faibles (weakKeys), parmi le top 3, pour cibler ton entraînement.
+ * Sans données de faiblesse, se comporte comme un tirage aléatoire.
+ */
+export function pickDrill(
+  lang: Lang,
+  weak: Record<string, number>,
+  excludeId?: string,
+) {
+  const pool = REWRITE.filter((s) => s.lang === lang && s.id !== excludeId)
+  const base = pool.length ? pool : REWRITE.filter((s) => s.lang === lang)
+  if (!base.length) return pickChallenge('rewrite', lang, excludeId)
+
+  const score = (code: string) => {
+    let s = 0
+    for (const ch of code) s += weak[ch] ?? 0
+    return s
+  }
+  const ranked = base
+    .map((s) => ({ s, sc: score(s.code) }))
+    .sort((a, b) => b.sc - a.sc)
+  const top = ranked.slice(0, 3)
+  const chosen = top[Math.floor(Math.random() * top.length)].s
+  return { id: chosen.id, title: chosen.title, start: '', target: chosen.code }
+}
+
 /** Jour local au format YYYY-MM-DD (sert de graine au défi du jour). */
 export function dailyKey(): string {
   const d = new Date()
