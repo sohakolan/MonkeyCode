@@ -86,6 +86,7 @@ interface RunData {
   lastSampleAt: number
   ghostPoints: GhostPoint[]
   lastGhostAt: number
+  charErrors: Record<string, number>
 }
 
 const freshRun = (): RunData => ({
@@ -97,6 +98,7 @@ const freshRun = (): RunData => ({
   lastSampleAt: 0,
   ghostPoints: [],
   lastGhostAt: 0,
+  charErrors: {},
 })
 
 export default function App() {
@@ -258,7 +260,12 @@ export default function App() {
     if (c.sound) playFinish()
     setResult(res)
     setIsRecord(beaten)
-    setReward(recordRunRef.current(res, { daily: isDailyRef.current }))
+    setReward(
+      recordRunRef.current(res, {
+        daily: isDailyRef.current,
+        charErrors: r.charErrors,
+      }),
+    )
     setStatus('done')
   }, [])
 
@@ -285,7 +292,14 @@ export default function App() {
         // pas encore jugé.
         const judged = c.ide ? doc.slice(0, cur) : doc
         const m = countMismatches(judged, ch.target)
-        if (m > r.prevMismatches) r.errors += m - r.prevMismatches
+        if (m > r.prevMismatches) {
+          r.errors += m - r.prevMismatches
+          // Attribue l'erreur au caractère cible attendu à la frontière.
+          const expected = ch.target[matchedPrefix(judged, ch.target)]
+          if (expected && expected !== '\n') {
+            r.charErrors[expected] = (r.charErrors[expected] ?? 0) + 1
+          }
+        }
         r.prevMismatches = m
       }
       if (c.sound && inserted > 0) {

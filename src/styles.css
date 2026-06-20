@@ -1325,3 +1325,65 @@ kbd {
   color: var(--accent);
   font-size: 13px;
 }
+
+/* touches faibles ----------------------------------------------------------- */
+.prof-weak {
+  grid-column: 1 / -1;
+  margin-top: 4px;
+}
+
+.prof-weak-title {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+
+.prof-weak-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.prof-weak-row {
+  display: grid;
+  grid-template-columns: 28px 1fr 28px;
+  align-items: center;
+  gap: 10px;
+}
+
+.prof-weak-key {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--fg);
+  text-align: center;
+  background: var(--bg-raise);
+  border: 1px solid var(--panel-edge);
+  border-radius: 5px;
+  padding: 2px 0;
+}
+
+.prof-weak-bar {
+  height: 7px;
+  border-radius: 4px;
+  background: var(--panel-edge);
+  overflow: hidden;
+}
+
+.prof-weak-bar-fill {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-dim), var(--error));
+  border-radius: 4px;
+}
+
+.prof-weak-count {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--ink);
+  text-align: right;
+}

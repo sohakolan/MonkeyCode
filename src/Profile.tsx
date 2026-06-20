@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { PlayerState } from './player'
+import { topWeakKeys } from './player'
 import { levelFromXp, rankFor, nextRank, RANKS } from './progression'
 import { LANG_LABEL } from './types'
 import { ACHIEVEMENTS } from './achievements'
@@ -126,6 +127,35 @@ function StatsTab({ player }: { player: PlayerState }) {
           >
             {r.glyph} {r.name}
           </span>
+        ))}
+      </div>
+      <WeakKeys weak={player.weakKeys} />
+    </div>
+  )
+}
+
+const CHAR_LABEL: Record<string, string> = { ' ': '␣', '\t': '⇥' }
+const showChar = (c: string) => CHAR_LABEL[c] ?? c
+
+function WeakKeys({ weak }: { weak: Record<string, number> }) {
+  const top = topWeakKeys(weak, 8)
+  if (top.length === 0) return null
+  const max = top[0].count
+  return (
+    <div className="prof-weak">
+      <div className="prof-weak-title">touches faibles</div>
+      <div className="prof-weak-list">
+        {top.map(({ char, count }) => (
+          <div key={char} className="prof-weak-row">
+            <span className="prof-weak-key">{showChar(char)}</span>
+            <span className="prof-weak-bar">
+              <span
+                className="prof-weak-bar-fill"
+                style={{ width: `${(count / max) * 100}%` }}
+              />
+            </span>
+            <span className="prof-weak-count">{count}</span>
+          </div>
         ))}
       </div>
     </div>

@@ -31,6 +31,7 @@ export interface PlayerState {
   unlockedThemes: string[]
   equippedTheme: string
   lastDailyDay: string | null
+  weakKeys: Record<string, number> // caractère cible → nombre d'erreurs cumulées
 }
 
 const DAILY_BONUS_XP = 150
@@ -52,6 +53,7 @@ export const FRESH_PLAYER: PlayerState = {
   unlockedThemes: ['ember'],
   equippedTheme: 'ember',
   lastDailyDay: null,
+  weakKeys: {},
 }
 
 export interface RunReward {
@@ -98,11 +100,41 @@ function dayDiff(a: string, b: string): number {
   return Math.round((Date.parse(b) - Date.parse(a)) / 86_400_000)
 }
 
+/**
+ * Fusionne les erreurs par caractère avec une légère décote (0.9) du passé,
+ * pour que « touches faibles » reflète tes faiblesses récentes, pas l'historique.
+ */
+function mergeWeakKeys(
+  prev: Record<string, number>,
+  add: Record<string, number> | undefined,
+): Record<string, number> {
+  const out: Record<string, number> = {}
+  for (const [k, v] of Object.entries(prev)) {
+    const decayed = Math.floor(v * 0.9)
+    if (decayed > 0) out[k] = decayed
+  }
+  if (add) {
+    for (const [k, v] of Object.entries(add)) out[k] = (out[k] ?? 0) + v
+  }
+  return out
+}
+
+/** Top des caractères les plus ratés (triés décroissant). */
+export function topWeakKeys(
+  weak: Record<string, number>,
+  limit = 8,
+): { char: string; count: number }[] {
+  return Object.entries(weak)
+    .map(([char, count]) => ({ char, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, limit)
+}
+
 /** Applique un run terminé à l'état et renvoie la récompense à animer. */
 export function applyRun(
   prev: PlayerState,
   run: RunResult,
-  opts: { daily?: boolean } = {},
+  opts: { daily?: boolean; charErrors?: Record<string, number> } = {},
 ): {
   next: PlayerState
   reward: RunReward
@@ -145,6 +177,7 @@ export function applyRun(
     vimRuns: prev.vimRuns + (run.input === 'vim' ? 1 : 0),
     langsCompleted: langs,
     lastDailyDay: dailyClaimed ? today : prev.lastDailyDay,
+    weakKeys: mergeWeakKeys(prev.weakKeys, opts.charErrors),
   }
 
   // Succès débloqués par ce run.
@@ -193,7 +226,10 @@ export function applyRun(
 
 export interface PlayerApi {
   player: PlayerState
-  recordRun: (run: RunResult, opts?: { daily?: boolean }) => RunReward
+  recordRun: (
+    run: RunResult,
+    opts?: { daily?: boolean; charErrors?: Record<string, number> },
+  ) => RunReward
   buyTheme: (id: string) => boolean
   equipTheme: (id: string) => void
 }
@@ -213,7 +249,10 @@ export function usePlayer(): PlayerApi {
   }, [player.equippedTheme])
 
   const recordRun = useCallback(
-    (run: RunResult, opts: { daily?: boolean } = {}): RunReward => {
+    (
+      run: RunResult,
+      opts: { daily?: boolean; charErrors?: Record<string, number> } = {},
+    ): RunReward => {
       const { next, reward } = applyRun(ref.current, run, opts)
       ref.current = next
       setPlayer(next)
