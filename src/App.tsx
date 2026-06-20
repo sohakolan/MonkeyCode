@@ -7,6 +7,7 @@ import Profile from './Profile'
 import { usePlayer, dailyAvailable, type RunReward } from './player'
 import { CLOUD_ENABLED } from './cloudEnv'
 import CloudSync from './CloudSync'
+import { playKey, playError, playFinish } from './sound'
 import { pickChallenge, pickDaily, dailyKey } from './snippets'
 import {
   ghostKey,
@@ -28,6 +29,7 @@ const DEFAULT_CONFIG: Config = {
   lang: 'ts',
   autoIndent: true,
   ide: true,
+  sound: false,
 }
 
 function loadConfig(): Config {
@@ -253,6 +255,7 @@ export default function App() {
       saveGhostIfBest(ghostKey(c, ch.id), timeline)
     }
 
+    if (c.sound) playFinish()
     setResult(res)
     setIsRecord(beaten)
     setReward(recordRunRef.current(res, { daily: isDailyRef.current }))
@@ -276,6 +279,7 @@ export default function App() {
       const c = configRef.current
       const r = run.current
       r.keystrokes += inserted
+      const errorsBefore = r.errors
       if (c.game === 'rewrite') {
         // En mode IDE, ce qui suit le curseur (brackets auto-fermés) n'est
         // pas encore jugé.
@@ -283,6 +287,10 @@ export default function App() {
         const m = countMismatches(judged, ch.target)
         if (m > r.prevMismatches) r.errors += m - r.prevMismatches
         r.prevMismatches = m
+      }
+      if (c.sound && inserted > 0) {
+        if (r.errors > errorsBefore) playError()
+        else playKey()
       }
       if (normalize(doc) === normalize(ch.target)) finish()
     },
@@ -411,6 +419,13 @@ export default function App() {
             title="auto-fermeture des brackets, complétion (tab) et snippets, comme dans un IDE"
           >
             ide
+          </button>
+          <button
+            className={config.sound ? 'cfg on' : 'cfg'}
+            onClick={() => applyConfig({ sound: !config.sound })}
+            title="retour sonore : clic de touche, blip d'erreur, accord de fin"
+          >
+            son
           </button>
           {config.game === 'rewrite' && (
             <button

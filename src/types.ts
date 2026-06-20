@@ -24,6 +24,7 @@ export interface Config {
   lang: Lang
   autoIndent: boolean
   ide: boolean
+  sound: boolean
 }
 
 export interface Challenge {
