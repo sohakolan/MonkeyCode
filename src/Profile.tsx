@@ -10,6 +10,7 @@ import CloudAccount from './CloudAccount'
 import Leaderboard from './Leaderboard'
 import KeyboardHeatmap from './KeyboardHeatmap'
 import ProgressChart from './ProgressChart'
+import DataManager from './DataManager'
 
 type Tab = 'stats' | 'succes' | 'themes' | 'classement' | 'compte'
 
@@ -94,7 +95,12 @@ export default function Profile({ player, buyTheme, equipTheme, onClose }: Props
             />
           )}
           {tab === 'classement' && CLOUD_ENABLED && <Leaderboard />}
-          {tab === 'compte' && (CLOUD_ENABLED ? <CloudAccount /> : <OfflineNote />)}
+          {tab === 'compte' && (
+            <div className="prof-compte">
+              {CLOUD_ENABLED ? <CloudAccount /> : <OfflineNote />}
+              <DataManager />
+            </div>
+          )}
         </div>
       </div>
     </div>

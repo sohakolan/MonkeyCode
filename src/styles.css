@@ -1563,3 +1563,51 @@ kbd {
   color: var(--ink-faint);
   padding: 18px 0;
 }
+
+/* gestion des données ------------------------------------------------------- */
+.prof-compte {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.prof-data {
+  border-top: 1px solid var(--panel-edge);
+  padding-top: 18px;
+}
+
+.prof-data-title {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+
+.prof-data-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.prof-data-actions .prof-theme-btn {
+  width: auto;
+  flex: 1;
+  min-width: 130px;
+  padding: 8px 14px;
+}
+
+.prof-theme-btn.danger {
+  color: var(--error);
+  border-color: rgba(255, 85, 98, 0.5);
+  background: rgba(255, 85, 98, 0.08);
+}
+
+.prof-data-ok {
+  color: var(--ok);
+  font-size: 12px;
+  margin-top: 8px;
+}
