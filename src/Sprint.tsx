@@ -7,9 +7,37 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import Editor from './Editor'
 import TargetPanel from './TargetPanel'
 import { pickSprint } from './snippets'
-import type { Challenge, Config } from './types'
+import { playKey, playError, playFinish } from './sound'
+import type { Challenge, Config, Lang } from './types'
+import { LANG_LABEL } from './types'
 
 const DURATION = 60_000
+
+// --- record personnel de sprint (localStorage, par langage) ------------------
+interface SprintBest {
+  completed: number
+  wpm: number
+}
+const BEST_KEY = 'monkeycode.sprintBest.v1'
+
+function loadBest(lang: Lang): SprintBest | null {
+  try {
+    const all = JSON.parse(localStorage.getItem(BEST_KEY) ?? '{}')
+    return all[lang] ?? null
+  } catch {
+    return null
+  }
+}
+
+function saveBest(lang: Lang, best: SprintBest) {
+  try {
+    const all = JSON.parse(localStorage.getItem(BEST_KEY) ?? '{}')
+    all[lang] = best
+    localStorage.setItem(BEST_KEY, JSON.stringify(all))
+  } catch {
+    // quota plein : on ignore
+  }
+}
 
 function normalize(s: string): string {
   return s
@@ -43,9 +71,12 @@ export default function Sprint({ config, onAward, onClose }: Props) {
   const [timeLeft, setTimeLeft] = useState(DURATION)
   const [completed, setCompleted] = useState(0)
   const [typed, setTyped] = useState('')
+  const [best, setBest] = useState<SprintBest | null>(() => loadBest(config.lang))
+  const [isRecord, setIsRecord] = useState(false)
 
   const endAtRef = useRef(0)
   const charsScoreRef = useRef(0)
+  const completedRef = useRef(0)
   const charsTypedRef = useRef(0)
   const errorsRef = useRef(0)
   const prevMismatchRef = useRef(0)
@@ -57,6 +88,7 @@ export default function Sprint({ config, onAward, onClose }: Props) {
 
   const restart = useCallback(() => {
     charsScoreRef.current = 0
+    completedRef.current = 0
     charsTypedRef.current = 0
     errorsRef.current = 0
     prevMismatchRef.current = 0
@@ -65,6 +97,7 @@ export default function Sprint({ config, onAward, onClose }: Props) {
     setTimeLeft(DURATION)
     setStatus('idle')
     setTyped('')
+    setIsRecord(false)
     setSnippet(pickSprint(config.lang))
     setRunKey((k) => k + 1)
   }, [config.lang])
@@ -72,11 +105,27 @@ export default function Sprint({ config, onAward, onClose }: Props) {
   const finishSprint = useCallback(() => {
     if (awardedRef.current) return
     awardedRef.current = true
-    const xp = Math.round(charsScoreRef.current * 0.45)
+    const score = charsScoreRef.current
+    const xp = Math.round(score * 0.45)
     const coins = Math.max(1, Math.round(xp / 8))
     onAward(xp, coins)
+
+    // record personnel (par nb de snippets, départage au wpm)
+    const wpm = Math.round(score / 5)
+    const done = completedRef.current
+    const prev = loadBest(config.lang)
+    const beaten =
+      !prev || done > prev.completed || (done === prev.completed && wpm > prev.wpm)
+    if (beaten) {
+      const fresh = { completed: done, wpm }
+      saveBest(config.lang, fresh)
+      setBest(fresh)
+      setIsRecord(true)
+    }
+
+    if (config.sound) playFinish()
     setStatus('done')
-  }, [onAward])
+  }, [onAward, config.lang, config.sound])
 
   // Décompte.
   useEffect(() => {
@@ -104,12 +153,19 @@ export default function Sprint({ config, onAward, onClose }: Props) {
       const target = snippetRef.current.target
       const judged = editorConfig.ide ? doc.slice(0, cur) : doc
       const m = countMismatches(judged, target)
+      const errBefore = errorsRef.current
       if (m > prevMismatchRef.current) errorsRef.current += m - prevMismatchRef.current
       prevMismatchRef.current = m
+
+      if (config.sound && inserted > 0) {
+        if (errorsRef.current > errBefore) playError()
+        else playKey()
+      }
 
       if (normalize(doc) === normalize(target)) {
         // snippet complété → score + suivant
         charsScoreRef.current += target.length
+        completedRef.current += 1
         prevMismatchRef.current = 0
         setCompleted((c) => c + 1)
         setTyped('')
@@ -117,7 +173,7 @@ export default function Sprint({ config, onAward, onClose }: Props) {
         setRunKey((k) => k + 1)
       }
     },
-    [config.lang, editorConfig.ide],
+    [config.lang, config.sound, editorConfig.ide],
   )
 
   // Raccourcis : échap ferme, entrée rejoue (sur l'écran de fin).
@@ -150,7 +206,11 @@ export default function Sprint({ config, onAward, onClose }: Props) {
 
         {status === 'done' ? (
           <div className="sprint-results">
-            <div className="sprint-tag">sprint terminé</div>
+            {isRecord ? (
+              <div className="record-badge">★ record personnel</div>
+            ) : (
+              <div className="sprint-tag">sprint terminé</div>
+            )}
             <div className="hero-value">{completed}</div>
             <div className="hero-label">snippets</div>
             <div className="results-grid">
@@ -167,6 +227,11 @@ export default function Sprint({ config, onAward, onClose }: Props) {
                 <div className="stat-label">caractères</div>
               </div>
             </div>
+            {best && (
+              <div className="sprint-best-line">
+                record {LANG_LABEL[config.lang]} : {best.completed} snippets · {best.wpm} wpm
+              </div>
+            )}
             <div className="results-hint">
               <kbd>↵</kbd> rejouer&ensp;·&ensp;<kbd>esc</kbd> fermer
             </div>
@@ -183,6 +248,11 @@ export default function Sprint({ config, onAward, onClose }: Props) {
               <span className="sprint-stat">
                 <b>{wpm}</b> wpm
               </span>
+              {best && (
+                <span className="sprint-stat sprint-best" title={`record ${LANG_LABEL[config.lang]}`}>
+                  record <b>{best.completed}</b>
+                </span>
+              )}
               <span className="sprint-progress">
                 <span
                   className="sprint-progress-fill"
