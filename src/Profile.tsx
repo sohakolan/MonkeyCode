@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { PlayerState } from './player'
 import { topWeakKeys } from './player'
 import { levelFromXp, rankFor, nextRank, RANKS } from './progression'
@@ -39,9 +39,23 @@ export default function Profile({ player, buyTheme, equipTheme, onClose }: Props
   const rank = rankFor(lvl.level)
   const upcoming = nextRank(lvl.level)
 
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onClose])
+
   return (
     <div className="modal-scrim" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label="profil du joueur"
+        onClick={(e) => e.stopPropagation()}
+      >
         <button className="modal-close" onClick={onClose} aria-label="fermer">
           ✕
         </button>

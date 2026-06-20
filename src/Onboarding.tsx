@@ -1,5 +1,6 @@
 // Carte d'accueil — affichée une seule fois, au tout premier lancement
 // (aucun run joué). Non bloquante : un bouton « commencer » la referme.
+import { useEffect } from 'react'
 
 interface Step {
   glyph: string
@@ -14,9 +15,23 @@ const STEPS: Step[] = [
 ]
 
 export default function Onboarding({ onClose }: { onClose: () => void }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onClose])
+
   return (
     <div className="modal-scrim" onClick={onClose}>
-      <div className="onb" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="onb"
+        role="dialog"
+        aria-modal="true"
+        aria-label="bienvenue"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="onb-logo">
           monkey<span className="logo-accent">_code</span>
         </div>

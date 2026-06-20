@@ -117,8 +117,8 @@ export default function App() {
   const [showOnboarding, setShowOnboarding] = useState(
     () => !localStorage.getItem(ONBOARDED_KEY),
   )
-  const sprintOpenRef = useRef(sprintOpen)
-  sprintOpenRef.current = sprintOpen
+  // Vrai dès qu'une modale est ouverte → neutralise les raccourcis globaux.
+  const modalOpenRef = useRef(false)
 
   const { player, recordRun, buyTheme, equipTheme, awardSprint } = usePlayer()
   const recordRunRef = useRef(recordRun)
@@ -347,7 +347,7 @@ export default function App() {
   // Raccourcis globaux.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (sprintOpenRef.current) return // le sprint gère ses propres touches
+      if (modalOpenRef.current) return // une modale est ouverte → ses propres touches
       const mod = e.metaKey || e.ctrlKey
       if (mod && e.key === 'Enter') {
         e.preventDefault()
@@ -374,6 +374,7 @@ export default function App() {
   }, [next, retry])
 
   // Stats live.
+  modalOpenRef.current = sprintOpen || profileOpen || showOnboarding
   const dailyReady = dailyAvailable(player, dailyKey())
   const target = challenge.target
   // En IDE, la cible ne juge que ce qui précède le curseur.
