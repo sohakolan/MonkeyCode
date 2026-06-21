@@ -443,3 +443,10 @@
     font-size: 36px;
   }
 }
+
+/* séparateur « tes records perso » sous le classement mondial */
+.leaderboard-page .lb-personal-eyebrow {
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid var(--panel-edge);
+}

@@ -141,7 +141,9 @@ function CloudBoard({ player }: { player?: PlayerState }) {
 // =============================================================================
 // OFFLINE — « tes records » dérivés de l'historique local. Aucun hook Convex.
 // =============================================================================
-function OfflineBoard() {
+// Sections « tes records » dérivées de l'historique local — réutilisées en
+// offline ET sous le classement mondial quand le cloud est actif.
+function PersonalRecords() {
   const history = useMemo(() => loadHistory(), [])
 
   // Seuls les runs « rewrite » ont un wpm comparable (le refactor n'a pas de
@@ -181,21 +183,15 @@ function OfflineBoard() {
 
   if (runs.length === 0) {
     return (
-      <>
-        <OfflineHead />
-        <div className="lb-state lb-reveal">
-          <strong>pas encore de record</strong>
-          termine un run en mode réécriture pour démarrer ton classement perso.
-        </div>
-        <CloudCta />
-      </>
+      <div className="lb-state lb-reveal">
+        <strong>pas encore de record</strong>
+        termine un run en mode réécriture pour démarrer ton classement perso.
+      </div>
     )
   }
 
   return (
     <>
-      <OfflineHead />
-
       <section className="lb-section">
         <p className="lb-eyebrow">meilleur run</p>
         {best && (
@@ -255,7 +251,15 @@ function OfflineBoard() {
           ))}
         </ol>
       </section>
+    </>
+  )
+}
 
+function OfflineBoard() {
+  return (
+    <>
+      <OfflineHead />
+      <PersonalRecords />
       <CloudCta />
     </>
   )
@@ -296,7 +300,15 @@ function CloudCta() {
 export default function Leaderboard({ player }: { player?: PlayerState } = {}) {
   return (
     <div className="leaderboard-page">
-      {CLOUD_ENABLED ? <CloudBoard player={player} /> : <OfflineBoard />}
+      {CLOUD_ENABLED ? (
+        <>
+          <CloudBoard player={player} />
+          <p className="lb-eyebrow lb-personal-eyebrow">tes records perso</p>
+          <PersonalRecords />
+        </>
+      ) : (
+        <OfflineBoard />
+      )}
     </div>
   )
 }
