@@ -1,18 +1,23 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Editor from './Editor'
 import TargetPanel from './TargetPanel'
 import Results from './Results'
 import Hud from './Hud'
-import Profile from './Profile'
+import ProfilePage from './ProfilePage'
+import Settings from './Settings'
+import Leaderboard from './Leaderboard'
 import Sprint from './Sprint'
 import Onboarding from './Onboarding'
 
 const ONBOARDED_KEY = 'monkeycode.onboarded.v1'
 import { usePlayer, dailyAvailable, type RunReward } from './player'
+import { usePrefs } from './prefs'
 import { loadHistory, saveHistory } from './history'
+import { resetProgress } from './data'
 import { CLOUD_ENABLED } from './cloudEnv'
 import CloudSync from './CloudSync'
-import { playKey, playError, playFinish } from './sound'
+import CloudAccount from './CloudAccount'
+import { playKey, playError, playFinish, setSoundPrefs } from './sound'
 import { pickChallenge, pickDaily, pickDrill, dailyKey } from './snippets'
 import {
   ghostKey,
@@ -26,6 +31,14 @@ import type { Challenge, Config, GameMode, InputMode, Lang, RunResult } from './
 import { LANG_LABEL } from './types'
 
 const CONFIG_KEY = 'monkeycode.config.v1'
+
+type View = 'type' | 'leaderboard' | 'profile' | 'settings'
+const NAV: { id: View; label: string }[] = [
+  { id: 'type', label: 'taper' },
+  { id: 'leaderboard', label: 'classement' },
+  { id: 'profile', label: 'profil' },
+  { id: 'settings', label: 'paramètres' },
+]
 
 const DEFAULT_CONFIG: Config = {
   game: 'rewrite',
@@ -112,17 +125,27 @@ export default function App() {
   const [result, setResult] = useState<RunResult | null>(null)
   const [isRecord, setIsRecord] = useState(false)
   const [reward, setReward] = useState<RunReward | null>(null)
-  const [profileOpen, setProfileOpen] = useState(false)
+  const [view, setView] = useState<View>('type')
   const [sprintOpen, setSprintOpen] = useState(false)
+  const [accountOpen, setAccountOpen] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(
     () => !localStorage.getItem(ONBOARDED_KEY),
   )
-  // Vrai dès qu'une modale est ouverte → neutralise les raccourcis globaux.
+  // Vrai dès qu'une modale (ou une vue hors-jeu) capte le clavier → neutralise
+  // les raccourcis globaux.
   const modalOpenRef = useRef(false)
 
   const { player, recordRun, buyTheme, equipTheme, awardSprint } = usePlayer()
+  const { prefs, setPref, resetPrefs } = usePrefs()
   const recordRunRef = useRef(recordRun)
   recordRunRef.current = recordRun
+  const quickRestartRef = useRef(prefs.quickRestart)
+  quickRestartRef.current = prefs.quickRestart
+
+  // Volume / ambiance sonore appliqués au moteur audio.
+  useEffect(() => {
+    setSoundPrefs(prefs.soundVolume, prefs.soundPack)
+  }, [prefs.soundVolume, prefs.soundPack])
 
   const [ghostMatched, setGhostMatched] = useState(0)
   const [hasGhost, setHasGhost] = useState(false)
@@ -171,6 +194,7 @@ export default function App() {
   const playDaily = useCallback(() => {
     const { lang, challenge } = pickDaily()
     setConfig((cfg) => ({ ...cfg, game: 'rewrite', lang }))
+    setView('type')
     reset(challenge, true)
   }, [reset])
 
@@ -178,6 +202,7 @@ export default function App() {
     (weak: Record<string, number>) => {
       const c = configRef.current
       setConfig((cfg) => ({ ...cfg, game: 'rewrite' }))
+      setView('type')
       reset(pickDrill(c.lang, weak, challengeRef.current.id))
     },
     [reset],
@@ -187,6 +212,9 @@ export default function App() {
     (patch: Partial<Config>) => {
       const merged = { ...configRef.current, ...patch }
       setConfig(merged)
+      // Le son n'affecte ni le challenge ni l'éditeur → inutile de relancer.
+      const onlySound = Object.keys(patch).every((k) => k === 'sound')
+      if (onlySound) return
       if (patch.game !== undefined || patch.lang !== undefined) {
         reset(pickChallenge(merged.game, merged.lang))
       } else {
@@ -194,6 +222,21 @@ export default function App() {
       }
     },
     [reset],
+  )
+
+  const onResetProgress = useCallback(() => {
+    resetProgress()
+    location.reload()
+  }, [])
+
+  // Navigation : quitter « taper » pendant une course l'annule proprement,
+  // sinon l'éditeur se remonterait à vide en gardant un état « en cours ».
+  const goView = useCallback(
+    (v: View) => {
+      if (v !== 'type' && statusRef.current === 'running') retry()
+      setView(v)
+    },
+    [retry],
   )
 
   const finish = useCallback(() => {
@@ -344,10 +387,10 @@ export default function App() {
     return () => clearInterval(t)
   }, [status, runKey])
 
-  // Raccourcis globaux.
+  // Raccourcis globaux (uniquement sur la vue « taper », hors modale).
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (modalOpenRef.current) return // une modale est ouverte → ses propres touches
+      if (modalOpenRef.current) return
       const mod = e.metaKey || e.ctrlKey
       if (mod && e.key === 'Enter') {
         e.preventDefault()
@@ -360,7 +403,7 @@ export default function App() {
         return
       }
       if (statusRef.current === 'done') {
-        if (e.key === 'Enter') {
+        if (e.key === 'Enter' || (quickRestartRef.current && e.key === 'Tab')) {
           e.preventDefault()
           next()
         } else if (e.key === 'Backspace') {
@@ -373,8 +416,20 @@ export default function App() {
     return () => window.removeEventListener('keydown', onKey, true)
   }, [next, retry])
 
-  // Stats live.
-  modalOpenRef.current = sprintOpen || profileOpen || showOnboarding
+  // Échap ferme la fiche compte.
+  useEffect(() => {
+    if (!accountOpen) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setAccountOpen(false)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [accountOpen])
+
+  // Une modale ouverte OU une vue hors-jeu neutralise les raccourcis de course.
+  modalOpenRef.current =
+    sprintOpen || showOnboarding || accountOpen || view !== 'type'
+
   const dailyReady = dailyAvailable(player, dailyKey())
   const target = challenge.target
   // En IDE, la cible ne juge que ce qui précède le curseur.
@@ -393,224 +448,308 @@ export default function App() {
     config.game === 'rewrite' ? matched / target.length : linesOk / targetLines.length
   const ghostPct = target.length ? ghostMatched / target.length : 0
   const ghostDelta = matched - ghostMatched
+  const showGhost = prefs.showGhost && hasGhost
+  // Historique relu à chaque entrée sur le profil (capte les runs récents),
+  // mémoïsé pour ne pas invalider les useMemo internes de ProfilePage.
+  const profileHistory = useMemo(
+    () => (view === 'profile' ? loadHistory() : []),
+    [view],
+  )
 
   return (
     <div className="app">
       {CLOUD_ENABLED && <CloudSync />}
+
       <header className="topbar">
-        <div className="logo">
+        <button className="logo" onClick={() => goView('type')} aria-label="accueil">
           monkey<span className="logo-accent">_code</span>
           <span className="logo-caret" />
-        </div>
+        </button>
 
-        <nav className="configbar" aria-label="configuration">
-          <div className="cfg-group">
-            {(['rewrite', 'refactor'] as GameMode[]).map((g) => (
-              <button
-                key={g}
-                className={config.game === g ? 'cfg on' : 'cfg'}
-                onClick={() => applyConfig({ game: g })}
-              >
-                {g === 'rewrite' ? 'réécrire' : 'modifier'}
-              </button>
-            ))}
-          </div>
-          <span className="cfg-sep" />
-          <div className="cfg-group">
-            {(['ts', 'py', 'rs', 'go'] as Lang[]).map((l) => (
-              <button
-                key={l}
-                className={config.lang === l ? 'cfg on' : 'cfg'}
-                onClick={() => applyConfig({ lang: l })}
-              >
-                {LANG_LABEL[l]}
-              </button>
-            ))}
-          </div>
-          <span className="cfg-sep" />
-          <div className="cfg-group">
-            {(['normal', 'vim'] as InputMode[]).map((m) => (
-              <button
-                key={m}
-                className={config.input === m ? 'cfg on' : 'cfg'}
-                onClick={() => applyConfig({ input: m })}
-              >
-                {m}
-              </button>
-            ))}
-          </div>
-          <span className="cfg-sep" />
-          <button
-            className={config.ide ? 'cfg on' : 'cfg'}
-            onClick={() => applyConfig({ ide: !config.ide })}
-            title="auto-fermeture des brackets, complétion (tab) et snippets, comme dans un IDE"
-          >
-            ide
-          </button>
-          <button
-            className={config.sound ? 'cfg on' : 'cfg'}
-            onClick={() => applyConfig({ sound: !config.sound })}
-            title="retour sonore : clic de touche, blip d'erreur, accord de fin"
-          >
-            son
-          </button>
-          {config.game === 'rewrite' && (
+        <nav className="mainnav" aria-label="navigation principale">
+          {NAV.map((item) => (
             <button
-              className={config.autoIndent ? 'cfg on' : 'cfg'}
-              onClick={() => applyConfig({ autoIndent: !config.autoIndent })}
-              title="à la ligne, l'indentation de la cible est insérée pour toi"
+              key={item.id}
+              className={view === item.id ? 'navlink on' : 'navlink'}
+              aria-current={view === item.id ? 'page' : undefined}
+              onClick={() => goView(item.id)}
             >
-              indent auto
+              {item.label}
             </button>
-          )}
+          ))}
         </nav>
 
         <div className="topbar-right">
-          <div className="topbar-actions">
+          {CLOUD_ENABLED && (
             <button
-              className="daily-btn"
-              onClick={() => setSprintOpen(true)}
-              title="sprint — enchaîne un max de snippets courts en 60 secondes"
+              className="iconbtn"
+              onClick={() => setAccountOpen(true)}
+              title="compte cloud — synchronise ta progression"
+              aria-label="compte"
             >
-              ▶ sprint
+              ⛁
             </button>
-
-            {Object.keys(player.weakKeys).length > 0 && (
-              <button
-                className="daily-btn"
-                onClick={() => playDrill(player.weakKeys)}
-                title="drill — exercice ciblé sur tes touches les plus faibles"
-              >
-                ◎ drill
-              </button>
-            )}
-
-            <button
-              className={`daily-btn ${dailyReady ? 'ready' : ''}`}
-              onClick={playDaily}
-              title="défi du jour — même exercice pour tout le monde, bonus une fois par jour"
-            >
-              ⚡ défi du jour
-              {dailyReady && <span className="daily-dot" />}
-            </button>
-          </div>
-
-          <Hud player={player} onOpenProfile={() => setProfileOpen(true)} />
+          )}
+          <Hud player={player} onOpenProfile={() => goView('profile')} />
         </div>
       </header>
 
-      <div
-        className={`livebar ${status === 'running' ? 'is-live' : ''} ${status === 'done' ? 'is-done' : ''}`}
-      >
-        <span className="live-item live-time">{fmtClock(elapsed)}</span>
-        {config.game === 'rewrite' ? (
-          <>
-            <span className="live-item">
-              <b>{Math.round(liveWpm)}</b> wpm
-            </span>
-            <span className="live-item">
-              <b>{Math.round(liveAcc * 100)}%</b> acc
-            </span>
-            {hasGhost && status === 'running' && (
-              <span className={`live-ghost ${ghostDelta >= 0 ? 'ahead' : 'behind'}`}>
-                {ghostDelta >= 0 ? '▲' : '▼'} {Math.abs(Math.round(ghostDelta))}
-                <span className="live-ghost-tag">ghost</span>
+      {view === 'type' && (
+        <>
+          <div className="typebar">
+            <nav className="configbar" aria-label="configuration">
+              <div className="cfg-group">
+                {(['rewrite', 'refactor'] as GameMode[]).map((g) => (
+                  <button
+                    key={g}
+                    className={config.game === g ? 'cfg on' : 'cfg'}
+                    onClick={() => applyConfig({ game: g })}
+                  >
+                    {g === 'rewrite' ? 'réécrire' : 'modifier'}
+                  </button>
+                ))}
+              </div>
+              <span className="cfg-sep" />
+              <div className="cfg-group">
+                {(['ts', 'py', 'rs', 'go'] as Lang[]).map((l) => (
+                  <button
+                    key={l}
+                    className={config.lang === l ? 'cfg on' : 'cfg'}
+                    onClick={() => applyConfig({ lang: l })}
+                  >
+                    {LANG_LABEL[l]}
+                  </button>
+                ))}
+              </div>
+              <span className="cfg-sep" />
+              <div className="cfg-group">
+                {(['normal', 'vim'] as InputMode[]).map((m) => (
+                  <button
+                    key={m}
+                    className={config.input === m ? 'cfg on' : 'cfg'}
+                    onClick={() => applyConfig({ input: m })}
+                  >
+                    {m}
+                  </button>
+                ))}
+              </div>
+              <span className="cfg-sep" />
+              <button
+                className={config.ide ? 'cfg on' : 'cfg'}
+                onClick={() => applyConfig({ ide: !config.ide })}
+                title="auto-fermeture des brackets, complétion (tab) et snippets, comme dans un IDE"
+              >
+                ide
+              </button>
+              <button
+                className={config.sound ? 'cfg on' : 'cfg'}
+                onClick={() => applyConfig({ sound: !config.sound })}
+                title="retour sonore : clic de touche, blip d'erreur, accord de fin"
+              >
+                son
+              </button>
+            </nav>
+
+            <div className="topbar-actions">
+              <button
+                className="daily-btn"
+                onClick={() => setSprintOpen(true)}
+                title="sprint — enchaîne un max de snippets courts en 60 secondes"
+              >
+                ▶ sprint
+              </button>
+
+              {Object.keys(player.weakKeys).length > 0 && (
+                <button
+                  className="daily-btn"
+                  onClick={() => playDrill(player.weakKeys)}
+                  title="drill — exercice ciblé sur tes touches les plus faibles"
+                >
+                  ◎ drill
+                </button>
+              )}
+
+              <button
+                className={`daily-btn ${dailyReady ? 'ready' : ''}`}
+                onClick={playDaily}
+                title="défi du jour — même exercice pour tout le monde, bonus une fois par jour"
+              >
+                ⚡ défi du jour
+                {dailyReady && <span className="daily-dot" />}
+              </button>
+            </div>
+          </div>
+
+          <div
+            className={`livebar ${status === 'running' ? 'is-live' : ''} ${status === 'done' ? 'is-done' : ''}`}
+          >
+            {prefs.showClock && (
+              <span className="live-item live-time">{fmtClock(elapsed)}</span>
+            )}
+            {config.game === 'rewrite' ? (
+              <>
+                {prefs.liveSpeed && (
+                  <>
+                    <span className="live-item">
+                      <b>{Math.round(liveWpm)}</b> wpm
+                    </span>
+                    <span className="live-item">
+                      <b>{Math.round(liveAcc * 100)}%</b> acc
+                    </span>
+                  </>
+                )}
+                {showGhost && status === 'running' && (
+                  <span className={`live-ghost ${ghostDelta >= 0 ? 'ahead' : 'behind'}`}>
+                    {ghostDelta >= 0 ? '▲' : '▼'} {Math.abs(Math.round(ghostDelta))}
+                    <span className="live-ghost-tag">ghost</span>
+                  </span>
+                )}
+              </>
+            ) : (
+              <span className="live-item">
+                <b>{linesOk}</b>/{targetLines.length} lignes
               </span>
             )}
-          </>
-        ) : (
-          <span className="live-item">
-            <b>{linesOk}</b>/{targetLines.length} lignes
-          </span>
-        )}
-        <span className="live-progress">
-          <span
-            className="live-progress-fill"
-            style={{ width: `${Math.min(progress * 100, 100)}%` }}
-          />
-          {hasGhost && (
-            <span
-              className="live-progress-ghost"
-              style={{ left: `${Math.min(ghostPct * 100, 100)}%` }}
-            />
-          )}
-        </span>
-      </div>
-
-      {status === 'done' && result ? (
-        <main className="stage">
-          <Results
-            result={result}
-            isRecord={isRecord}
-            snippetTitle={challenge.title}
-            reward={reward}
-          />
-        </main>
-      ) : (
-        <main className="stage panels" key={`${challenge.id}-${runKey}`}>
-          <section className="panel panel-target">
-            <div className="panel-head">
-              <span className="panel-tag">cible</span>
-              <span className="panel-title">{challenge.title}</span>
-              {challenge.hint && <span className="panel-hint">{challenge.hint}</span>}
-            </div>
-            <div className="panel-body">
-              <TargetPanel mode={config.game} target={target} typed={ghostTyped} />
-            </div>
-          </section>
-
-          <section className="panel panel-editor">
-            <div className="panel-head">
-              <span className="panel-tag">éditeur</span>
-              <span className="panel-title">
-                {config.game === 'refactor' ? 'transforme le code' : 'recopie le code'}
+            {prefs.showProgress && (
+              <span className="live-progress">
+                <span
+                  className="live-progress-fill"
+                  style={{ width: `${Math.min(progress * 100, 100)}%` }}
+                />
+                {showGhost && (
+                  <span
+                    className="live-progress-ghost"
+                    style={{ left: `${Math.min(ghostPct * 100, 100)}%` }}
+                  />
+                )}
               </span>
-              {config.input === 'vim' && vimMode && (
-                <span className={`vim-badge vim-${vimMode.split(' ')[0]}`}>{vimMode}</span>
-              )}
-            </div>
-            <div className="panel-body">
-              <Editor
-                challenge={challenge}
-                config={config}
-                runKey={runKey}
-                onDoc={onDoc}
-                onActivity={onActivity}
-                onVimMode={setVimMode}
+            )}
+          </div>
+
+          {status === 'done' && result ? (
+            <main className="stage">
+              <Results
+                result={result}
+                isRecord={isRecord}
+                snippetTitle={challenge.title}
+                reward={reward}
               />
-            </div>
-          </section>
+            </main>
+          ) : (
+            <main className="stage panels" key={`${challenge.id}-${runKey}`}>
+              <section className="panel panel-target">
+                <div className="panel-head">
+                  <span className="panel-tag">cible</span>
+                  <span className="panel-title">{challenge.title}</span>
+                  {challenge.hint && <span className="panel-hint">{challenge.hint}</span>}
+                </div>
+                <div className="panel-body">
+                  <TargetPanel mode={config.game} target={target} typed={ghostTyped} />
+                </div>
+              </section>
+
+              <section className="panel panel-editor">
+                <div className="panel-head">
+                  <span className="panel-tag">éditeur</span>
+                  <span className="panel-title">
+                    {config.game === 'refactor' ? 'transforme le code' : 'recopie le code'}
+                  </span>
+                  {config.input === 'vim' && vimMode && (
+                    <span className={`vim-badge vim-${vimMode.split(' ')[0]}`}>{vimMode}</span>
+                  )}
+                </div>
+                <div className="panel-body">
+                  <Editor
+                    challenge={challenge}
+                    config={config}
+                    runKey={runKey}
+                    onDoc={onDoc}
+                    onActivity={onActivity}
+                    onVimMode={setVimMode}
+                  />
+                </div>
+              </section>
+            </main>
+          )}
+
+          <footer className="footer">
+            <span>
+              <kbd>⌘↵</kbd> nouvel exercice
+            </span>
+            <span>
+              <kbd>⌘⌫</kbd> recommencer
+            </span>
+            {prefs.quickRestart && status === 'done' && (
+              <span>
+                <kbd>tab</kbd> enchaîner
+              </span>
+            )}
+            {config.ide && status !== 'done' && (
+              <span>
+                <kbd>tab</kbd> compléter / snippets (fn, forof, iferr…)
+              </span>
+            )}
+            {config.game === 'refactor' && status !== 'done' && (
+              <span className="footer-goal">objectif : chaque ligne doit correspondre à la cible</span>
+            )}
+          </footer>
+        </>
+      )}
+
+      {view === 'leaderboard' && (
+        <main className="view">
+          <Leaderboard player={player} />
         </main>
       )}
 
-      <footer className="footer">
-        <span>
-          <kbd>⌘↵</kbd> nouvel exercice
-        </span>
-        <span>
-          <kbd>⌘⌫</kbd> recommencer
-        </span>
-        {config.ide && (
-          <span>
-            <kbd>tab</kbd> compléter / snippets (fn, forof, iferr…)
-          </span>
-        )}
-        {config.game === 'refactor' && (
-          <span className="footer-goal">objectif : chaque ligne doit correspondre à la cible</span>
-        )}
-      </footer>
+      {view === 'profile' && (
+        <main className="view">
+          <ProfilePage player={player} history={profileHistory} />
+        </main>
+      )}
 
-      {profileOpen && (
-        <Profile
-          player={player}
-          buyTheme={buyTheme}
-          equipTheme={equipTheme}
-          onClose={() => setProfileOpen(false)}
-        />
+      {view === 'settings' && (
+        <main className="view">
+          <Settings
+            config={config}
+            applyConfig={applyConfig}
+            prefs={prefs}
+            setPref={setPref}
+            resetPrefs={resetPrefs}
+            player={player}
+            buyTheme={buyTheme}
+            equipTheme={equipTheme}
+            onResetProgress={onResetProgress}
+          />
+        </main>
       )}
 
       {sprintOpen && (
         <Sprint config={config} onAward={awardSprint} onClose={() => setSprintOpen(false)} />
+      )}
+
+      {accountOpen && CLOUD_ENABLED && (
+        <div
+          className="sheet-backdrop"
+          role="dialog"
+          aria-modal="true"
+          aria-label="compte cloud"
+          onClick={() => setAccountOpen(false)}
+        >
+          <div className="sheet" onClick={(e) => e.stopPropagation()}>
+            <div className="sheet-head">
+              <span className="sheet-title">compte cloud</span>
+              <button
+                className="sheet-x"
+                onClick={() => setAccountOpen(false)}
+                aria-label="fermer"
+              >
+                ✕
+              </button>
+            </div>
+            <CloudAccount />
+          </div>
+        </div>
       )}
 
       {showOnboarding && (
