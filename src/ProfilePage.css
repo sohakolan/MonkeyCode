@@ -1,0 +1,514 @@
+/* ===========================================================================
+   Page profil — ember terminal, tout-mono. Toutes les couleurs passent par les
+   variables de thème (--bg --panel --accent …) ou rgba(var(--accent-rgb), α).
+   Tous les sélecteurs sont scopés sous .profile-page.
+   =========================================================================== */
+
+.profile-page {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  max-width: 940px;
+  margin: 0 auto;
+  padding: 28px 20px 64px;
+  color: var(--fg);
+  font-family: var(--mono);
+}
+
+.profile-page .pp-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.profile-page .pp-title {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  text-transform: lowercase;
+  color: var(--fg);
+}
+
+/* --- Eyebrows de section --------------------------------------------------- */
+.profile-page .pp-eyebrow {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0 0 14px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: lowercase;
+  color: var(--ink-faint);
+}
+.profile-page .pp-caret {
+  color: var(--accent);
+}
+.profile-page .pp-eyebrow-count {
+  margin-left: auto;
+  color: var(--ink);
+  letter-spacing: 0.06em;
+}
+.profile-page .pp-mini-eyebrow {
+  margin: 0 0 10px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: lowercase;
+  color: var(--ink-faint);
+}
+
+.profile-page .pp-section {
+  display: block;
+}
+
+/* --- Carte générique ------------------------------------------------------- */
+.profile-page .pp-card {
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  border-radius: 14px;
+  padding: 20px;
+}
+
+/* --- Identité -------------------------------------------------------------- */
+.profile-page .pp-identity {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px;
+  align-items: center;
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  border-radius: 14px;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+.profile-page .pp-identity::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    120% 140% at 0% 0%,
+    rgba(var(--accent-rgb), 0.08),
+    transparent 60%
+  );
+  pointer-events: none;
+}
+
+.profile-page .pp-id-left {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  position: relative;
+}
+
+.profile-page .pp-level-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+  padding-right: 22px;
+  border-right: 1px solid var(--panel-edge);
+}
+.profile-page .pp-level-num {
+  font-family: var(--display);
+  font-size: 64px;
+  font-weight: 800;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+}
+.profile-page .pp-level-cap {
+  margin-top: 6px;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: lowercase;
+  color: var(--ink-faint);
+}
+
+.profile-page .pp-id-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 220px;
+}
+.profile-page .pp-tier {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  text-transform: lowercase;
+  color: var(--fg);
+}
+.profile-page .pp-tier-glyph {
+  color: var(--accent);
+  font-size: 16px;
+}
+
+.profile-page .pp-xpbar {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--bg-raise);
+  border: 1px solid var(--panel-edge);
+  overflow: hidden;
+}
+.profile-page .pp-xpbar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    var(--accent-dim),
+    var(--accent)
+  );
+  transition: width 220ms ease;
+}
+.profile-page .pp-xp-label {
+  font-size: 11px;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.profile-page .pp-xp-next {
+  color: var(--ink-faint);
+}
+
+.profile-page .pp-id-counters {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(96px, 1fr));
+  gap: 12px;
+  position: relative;
+}
+.profile-page .pp-counter {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 14px;
+  background: var(--bg-raise);
+  border: 1px solid var(--panel-edge);
+  border-radius: 10px;
+}
+.profile-page .pp-counter-num {
+  font-family: var(--display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+.profile-page .pp-counter-num.accent {
+  color: var(--accent);
+}
+.profile-page .pp-counter-label {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: lowercase;
+  color: var(--ink-faint);
+}
+.profile-page .pp-counter-sub {
+  font-size: 10px;
+  color: var(--ink);
+}
+
+/* --- Grille de stats ------------------------------------------------------- */
+.profile-page .pp-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+.profile-page .pp-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  border-radius: 14px;
+  padding: 16px 18px;
+  transition: border-color 160ms ease, transform 160ms ease;
+}
+.profile-page .pp-stat:hover {
+  border-color: rgba(var(--accent-rgb), 0.4);
+  transform: translateY(-2px);
+}
+.profile-page .pp-stat-label {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: lowercase;
+  color: var(--ink-faint);
+}
+.profile-page .pp-stat-num {
+  font-family: var(--display);
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+.profile-page .pp-stat-num.accent {
+  color: var(--accent);
+}
+.profile-page .pp-stat-sub {
+  font-size: 10px;
+  color: var(--ink);
+}
+
+/* --- Meilleur wpm par langage ---------------------------------------------- */
+.profile-page .pp-lang-best {
+  margin-top: 16px;
+}
+.profile-page .pp-lang-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+}
+.profile-page .pp-lang-cell {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--bg-raise);
+  border: 1px solid var(--panel-edge);
+  border-radius: 10px;
+}
+.profile-page .pp-lang-name {
+  font-size: 12px;
+  color: var(--ink);
+}
+.profile-page .pp-lang-wpm {
+  font-family: var(--display);
+  font-weight: 700;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Courbe ---------------------------------------------------------------- */
+.profile-page .pp-chart-card {
+  padding: 16px;
+}
+.profile-page .pp-chart {
+  display: block;
+  width: 100%;
+  height: 200px;
+}
+.profile-page .pp-chart-grid {
+  stroke: var(--panel-edge);
+  stroke-width: 1;
+  stroke-dasharray: 2 4;
+  vector-effect: non-scaling-stroke;
+}
+.profile-page .pp-chart-area {
+  fill: rgba(var(--accent-rgb), 0.12);
+  stroke: none;
+}
+.profile-page .pp-chart-line {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.profile-page .pp-chart-dot {
+  fill: var(--accent);
+  stroke: var(--bg);
+  stroke-width: 2;
+}
+.profile-page .pp-chart-empty {
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* --- Succès ---------------------------------------------------------------- */
+.profile-page .pp-badge-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+.profile-page .pp-badge {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+  border-radius: 14px;
+  border: 1px solid var(--panel-edge);
+  background: var(--panel);
+  transition: border-color 160ms ease, transform 160ms ease;
+}
+.profile-page .pp-badge.on {
+  border-color: rgba(var(--accent-rgb), 0.45);
+  background: linear-gradient(
+    180deg,
+    rgba(var(--accent-rgb), 0.08),
+    var(--panel) 60%
+  );
+}
+.profile-page .pp-badge.on:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+}
+.profile-page .pp-badge.off {
+  opacity: 0.45;
+  filter: grayscale(0.4);
+}
+.profile-page .pp-badge-glyph {
+  font-size: 22px;
+  line-height: 1;
+  color: var(--accent);
+}
+.profile-page .pp-badge.off .pp-badge-glyph {
+  color: var(--ink-faint);
+}
+.profile-page .pp-badge-name {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: lowercase;
+  color: var(--fg);
+}
+.profile-page .pp-badge-desc {
+  font-size: 11px;
+  color: var(--ink);
+  line-height: 1.4;
+}
+.profile-page .pp-badge-reward {
+  margin-top: 2px;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+.profile-page .pp-badge.on .pp-badge-reward {
+  color: rgba(var(--accent-rgb), 0.85);
+}
+
+/* --- Touches faibles ------------------------------------------------------- */
+.profile-page .pp-weak-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px;
+}
+.profile-page .pp-weak-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid;
+  line-height: 1;
+}
+.profile-page .pp-weak-char {
+  font-family: var(--mono);
+  font-weight: 700;
+  color: var(--fg);
+}
+.profile-page .pp-weak-count {
+  font-size: 0.7em;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Thème équipé ---------------------------------------------------------- */
+.profile-page .pp-theme-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.profile-page .pp-theme-swatch {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  flex: none;
+  border: 1px solid var(--panel-edge);
+  background: linear-gradient(135deg, var(--accent), var(--accent-dim));
+}
+.profile-page .pp-theme-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.profile-page .pp-theme-name {
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: lowercase;
+  color: var(--fg);
+}
+.profile-page .pp-theme-sub {
+  font-size: 11px;
+  color: var(--ink);
+  line-height: 1.4;
+}
+
+/* --- États vides ----------------------------------------------------------- */
+.profile-page .pp-empty {
+  margin: 0;
+  font-size: 12px;
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+/* --- Focus visible --------------------------------------------------------- */
+.profile-page :focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* --- Responsive ------------------------------------------------------------ */
+@media (max-width: 720px) {
+  .profile-page .pp-identity {
+    grid-template-columns: 1fr;
+  }
+  .profile-page .pp-id-counters {
+    grid-template-columns: repeat(4, minmax(72px, 1fr));
+  }
+}
+@media (max-width: 480px) {
+  .profile-page {
+    padding: 20px 14px 48px;
+    gap: 26px;
+  }
+  .profile-page .pp-id-left {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .profile-page .pp-level-block {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 10px;
+    padding-right: 0;
+    border-right: none;
+  }
+  .profile-page .pp-level-num {
+    font-size: 48px;
+  }
+  .profile-page .pp-id-counters {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .profile-page .pp-id-meta {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+/* --- Mouvement réduit ------------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  .profile-page .pp-stat,
+  .profile-page .pp-badge,
+  .profile-page .pp-xpbar-fill {
+    transition: none;
+  }
+  .profile-page .pp-stat:hover,
+  .profile-page .pp-badge.on:hover {
+    transform: none;
+  }
+}

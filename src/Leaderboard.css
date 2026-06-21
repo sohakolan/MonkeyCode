@@ -1,0 +1,445 @@
+/* =============================================================================
+   Leaderboard — page plein écran « classement ». Scopée sous .leaderboard-page.
+   Couleurs : uniquement les vars du thème + alphas neutres / accent.
+   ========================================================================== */
+
+.leaderboard-page {
+  --lb-hairline: var(--panel-edge);
+  --lb-hover: rgba(255, 255, 255, 0.02);
+  --lb-gold: 250, 214, 137;
+  --lb-silver: 206, 212, 224;
+  --lb-bronze: 209, 152, 110;
+
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 32px 20px 64px;
+  color: var(--fg);
+  font-family: var(--mono);
+}
+
+/* ---- header --------------------------------------------------------------- */
+
+.leaderboard-page .lb-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.leaderboard-page .lb-title {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  text-transform: lowercase;
+  color: var(--fg);
+  line-height: 1;
+}
+
+.leaderboard-page .lb-sub {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--ink);
+}
+
+/* ---- segmented toggle / tabs --------------------------------------------- */
+
+.leaderboard-page .lb-seg {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--panel-edge);
+  border-radius: 12px;
+  background: var(--panel);
+}
+
+.leaderboard-page .lb-pill {
+  appearance: none;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  text-transform: lowercase;
+  color: var(--ink);
+  background: transparent;
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+.leaderboard-page .lb-pill:hover {
+  color: var(--fg);
+}
+
+.leaderboard-page .lb-pill.on {
+  color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.1);
+  border-color: var(--accent-dim);
+}
+
+.leaderboard-page .lb-pill:focus-visible {
+  outline: 2px solid rgba(var(--accent-rgb), 0.6);
+  outline-offset: 2px;
+}
+
+/* ---- section eyebrow ------------------------------------------------------ */
+
+.leaderboard-page .lb-eyebrow {
+  margin: 0 0 12px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: lowercase;
+  color: var(--ink-faint);
+}
+
+.leaderboard-page .lb-eyebrow::before {
+  content: '\25B8\00A0';
+  color: var(--accent);
+}
+
+.leaderboard-page .lb-section {
+  margin-top: 32px;
+}
+
+/* ---- ranked list ---------------------------------------------------------- */
+
+.leaderboard-page .lb-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--panel-edge);
+  border-radius: 14px;
+  background: var(--panel);
+  overflow: hidden;
+}
+
+.leaderboard-page .lb-row {
+  display: grid;
+  grid-template-columns: 44px 1fr auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--lb-hairline);
+  border-left: 3px solid transparent;
+  transition: background 0.15s ease;
+}
+
+.leaderboard-page .lb-row:first-child {
+  border-top: 0;
+}
+
+.leaderboard-page .lb-row:hover {
+  background: var(--lb-hover);
+}
+
+.leaderboard-page .lb-row.me {
+  background: rgba(var(--accent-rgb), 0.06);
+  border-left-color: var(--accent-dim);
+}
+
+.leaderboard-page .lb-rank {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--ink);
+}
+
+/* médailles top 3 — teintes neutres chaudes/froides */
+.leaderboard-page .lb-row.top1 {
+  border-left-color: rgba(var(--lb-gold), 0.7);
+}
+.leaderboard-page .lb-row.top1 .lb-rank {
+  color: rgb(var(--lb-gold));
+}
+.leaderboard-page .lb-row.top2 {
+  border-left-color: rgba(var(--lb-silver), 0.5);
+}
+.leaderboard-page .lb-row.top2 .lb-rank {
+  color: rgb(var(--lb-silver));
+}
+.leaderboard-page .lb-row.top3 {
+  border-left-color: rgba(var(--lb-bronze), 0.55);
+}
+.leaderboard-page .lb-row.top3 .lb-rank {
+  color: rgb(var(--lb-bronze));
+}
+
+.leaderboard-page .lb-handle {
+  font-size: 14px;
+  color: var(--fg);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leaderboard-page .lb-row.me .lb-handle::after {
+  content: ' toi';
+  color: var(--accent);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+
+.leaderboard-page .lb-badge {
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  border: 1px solid var(--panel-edge);
+  border-radius: 6px;
+  padding: 2px 7px;
+  background: var(--bg-raise);
+  white-space: nowrap;
+}
+
+.leaderboard-page .lb-metric {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg);
+  white-space: nowrap;
+}
+
+.leaderboard-page .lb-metric .lb-unit {
+  font-family: var(--mono);
+  font-weight: 400;
+  font-size: 11px;
+  color: var(--ink-faint);
+  margin-left: 3px;
+}
+
+/* ---- states --------------------------------------------------------------- */
+
+.leaderboard-page .lb-state {
+  border: 1px dashed var(--panel-edge);
+  border-radius: 14px;
+  padding: 40px 24px;
+  text-align: center;
+  color: var(--ink);
+  font-size: 13px;
+  background: var(--panel);
+}
+
+.leaderboard-page .lb-state strong {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--fg);
+  font-weight: 600;
+}
+
+/* ---- offline hero --------------------------------------------------------- */
+
+.leaderboard-page .lb-hero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 12px 20px;
+  border: 1px solid var(--panel-edge);
+  border-radius: 14px;
+  padding: 24px;
+  background:
+    linear-gradient(180deg, rgba(var(--accent-rgb), 0.05), transparent),
+    var(--panel);
+}
+
+.leaderboard-page .lb-hero-value {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 44px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+}
+
+.leaderboard-page .lb-hero-value .lb-unit {
+  font-family: var(--mono);
+  font-weight: 400;
+  font-size: 14px;
+  color: var(--ink-faint);
+  margin-left: 4px;
+}
+
+.leaderboard-page .lb-hero-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.leaderboard-page .lb-hero-label {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: lowercase;
+  color: var(--ink-faint);
+}
+
+.leaderboard-page .lb-hero-detail {
+  font-size: 13px;
+  color: var(--fg);
+}
+
+.leaderboard-page .lb-hero-detail .lb-lang {
+  color: var(--accent);
+}
+
+/* ---- records par langage (grid) ------------------------------------------ */
+
+.leaderboard-page .lb-langs {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.leaderboard-page .lb-lang-card {
+  border: 1px solid var(--panel-edge);
+  border-radius: 12px;
+  padding: 14px 16px;
+  background: var(--panel);
+  transition: background 0.15s ease;
+}
+
+.leaderboard-page .lb-lang-card:hover {
+  background: var(--lb-hover);
+}
+
+.leaderboard-page .lb-lang-name {
+  font-size: 12px;
+  color: var(--ink);
+  text-transform: lowercase;
+}
+
+.leaderboard-page .lb-lang-wpm {
+  margin-top: 6px;
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg);
+}
+
+.leaderboard-page .lb-lang-wpm .lb-unit {
+  font-family: var(--mono);
+  font-weight: 400;
+  font-size: 11px;
+  color: var(--ink-faint);
+  margin-left: 3px;
+}
+
+.leaderboard-page .lb-lang-runs {
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--ink-faint);
+}
+
+/* ---- fastest runs list --------------------------------------------------- */
+
+.leaderboard-page .lb-fast .lb-row {
+  grid-template-columns: 44px auto 1fr auto;
+}
+
+.leaderboard-page .lb-fast .lb-acc {
+  font-size: 12px;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.leaderboard-page .lb-fast .lb-acc.low {
+  color: var(--error);
+}
+
+.leaderboard-page .lb-fast .lb-when {
+  font-size: 12px;
+  color: var(--ink-faint);
+  text-align: right;
+}
+
+/* ---- cloud CTA ------------------------------------------------------------ */
+
+.leaderboard-page .lb-cta {
+  margin-top: 32px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border: 1px solid var(--accent-dim);
+  border-radius: 14px;
+  padding: 18px 20px;
+  background: rgba(var(--accent-rgb), 0.05);
+}
+
+.leaderboard-page .lb-cta-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.15);
+  flex: 0 0 auto;
+}
+
+.leaderboard-page .lb-cta-text strong {
+  display: block;
+  font-size: 13px;
+  color: var(--fg);
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.leaderboard-page .lb-cta-text span {
+  font-size: 12px;
+  color: var(--ink);
+}
+
+/* ---- motion : stagger reveal --------------------------------------------- */
+
+@keyframes lb-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.leaderboard-page .lb-reveal {
+  animation: lb-rise 0.4s ease both;
+}
+
+.leaderboard-page .lb-row.lb-reveal {
+  animation-delay: calc(var(--i, 0) * 28ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .leaderboard-page .lb-reveal,
+  .leaderboard-page .lb-row.lb-reveal {
+    animation: none;
+  }
+}
+
+/* ---- responsive ----------------------------------------------------------- */
+
+@media (max-width: 420px) {
+  .leaderboard-page {
+    padding: 24px 14px 48px;
+  }
+  .leaderboard-page .lb-row {
+    grid-template-columns: 36px 1fr auto;
+    gap: 8px;
+  }
+  .leaderboard-page .lb-badge {
+    display: none;
+  }
+  .leaderboard-page .lb-fast .lb-row {
+    grid-template-columns: 36px auto 1fr;
+  }
+  .leaderboard-page .lb-fast .lb-when {
+    display: none;
+  }
+  .leaderboard-page .lb-hero-value {
+    font-size: 36px;
+  }
+}
