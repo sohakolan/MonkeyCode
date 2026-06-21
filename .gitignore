@@ -32,3 +32,4 @@ dist-ssr
 # Convex generated code & local deploy state
 convex/_generated/
 .convex/
+.vercel
