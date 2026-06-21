@@ -7,11 +7,11 @@ export const emberTheme = EditorView.theme(
     '&': {
       backgroundColor: 'transparent',
       color: 'var(--fg)',
-      fontSize: '15px',
+      fontSize: 'var(--editor-font-size, 15px)',
       height: '100%',
     },
     '.cm-content': {
-      fontFamily: "'JetBrains Mono', monospace",
+      fontFamily: 'var(--mono)',
       fontVariantLigatures: 'none',
       caretColor: 'var(--accent)',
       padding: '4px 0 24px',
@@ -41,7 +41,7 @@ export const emberTheme = EditorView.theme(
       backgroundColor: 'transparent',
       color: 'var(--ink-faint)',
       border: 'none',
-      fontFamily: "'JetBrains Mono', monospace",
+      fontFamily: 'var(--mono)',
       fontSize: '12px',
       paddingRight: '10px',
     },
@@ -66,7 +66,7 @@ export const emberTheme = EditorView.theme(
     },
     '.cm-tooltip-autocomplete': {
       '& > ul': {
-        fontFamily: "'JetBrains Mono', monospace",
+        fontFamily: 'var(--mono)',
         fontSize: '13px',
         maxHeight: '14em',
       },
@@ -111,13 +111,13 @@ export const emberTheme = EditorView.theme(
     '.cm-vim-panel, .cm-panels': {
       backgroundColor: 'var(--panel)',
       color: 'var(--fg)',
-      fontFamily: "'JetBrains Mono', monospace",
+      fontFamily: 'var(--mono)',
       padding: '2px 8px',
     },
     '.cm-panels-bottom': { border: 'none' },
     '.cm-vim-panel input': {
       color: 'var(--fg)',
-      fontFamily: "'JetBrains Mono', monospace",
+      fontFamily: 'var(--mono)',
     },
   },
   { dark: true },

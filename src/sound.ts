@@ -4,8 +4,19 @@
 // première frappe (geste utilisateur requis par les navigateurs).
 // =============================================================================
 
+export type SoundPack = 'click' | 'typewriter' | 'soft'
+
 let ctx: AudioContext | null = null
 let master: GainNode | null = null
+let volume = 0.5
+let pack: SoundPack = 'click'
+
+/** Réglages live depuis les préférences (volume 0→1, ambiance). */
+export function setSoundPrefs(v: number, p: SoundPack) {
+  volume = Math.max(0, Math.min(1, v))
+  pack = p
+  if (master) master.gain.value = volume
+}
 
 function ensure(): AudioContext | null {
   if (typeof window === 'undefined') return null
@@ -14,7 +25,7 @@ function ensure(): AudioContext | null {
     if (!AC) return null
     ctx = new AC()
     master = ctx.createGain()
-    master.gain.value = 0.5
+    master.gain.value = volume
     master.connect(ctx.destination)
   }
   if (ctx.state === 'suspended') void ctx.resume()
@@ -46,12 +57,19 @@ function blip(
   osc.stop(t + durationMs / 1000 + 0.02)
 }
 
-/** Clic de touche — légère variation de hauteur pour le réalisme. */
+/** Clic de touche — timbre selon l'ambiance choisie, léger jitter de hauteur. */
 export function playKey() {
   // pseudo-aléatoire stable-friendly : on s'appuie sur currentTime
   const ac = ensure()
   const jitter = ac ? (ac.currentTime * 1000) % 40 : 0
-  blip(150 + jitter, 28, 'triangle', 0.16)
+  if (pack === 'typewriter') {
+    blip(420 + jitter * 2, 18, 'square', 0.1)
+    blip(90, 36, 'triangle', 0.14)
+  } else if (pack === 'soft') {
+    blip(220 + jitter, 40, 'sine', 0.12)
+  } else {
+    blip(150 + jitter, 28, 'triangle', 0.16)
+  }
 }
 
 export function playError() {
