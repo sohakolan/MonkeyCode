@@ -3,8 +3,9 @@
 // + boutique de thèmes. Page plein écran (pas une modale). Offline-first : tout
 // passe par les callbacks fournis, aucune dépendance cloud.
 // =============================================================================
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import './Settings.css'
+import { exportData, importData } from './data'
 import type { Config, GameMode, InputMode, Lang } from './types'
 import { LANG_LABEL } from './types'
 import type { Prefs, FontId, CaretStyle } from './prefs'
@@ -179,6 +180,37 @@ export default function Settings(props: SettingsProps) {
     const t = setTimeout(() => setConfirmReset(false), 3500)
     return () => clearTimeout(t)
   }, [confirmReset])
+
+  // Sauvegarde locale : export (téléchargement) / import (fichier .json).
+  const fileRef = useRef<HTMLInputElement>(null)
+  const [dataMsg, setDataMsg] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null)
+
+  const exportProgress = () => {
+    const blob = new Blob([exportData()], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `monkeycode-${new Date().toISOString().slice(0, 10)}.json`
+    a.click()
+    URL.revokeObjectURL(url)
+    setDataMsg({ kind: 'ok', text: 'progression exportée' })
+  }
+
+  const importProgress = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => {
+      if (importData(String(reader.result))) {
+        setDataMsg({ kind: 'ok', text: 'import réussi — rechargement…' })
+        setTimeout(() => location.reload(), 600)
+      } else {
+        setDataMsg({ kind: 'err', text: 'fichier invalide' })
+      }
+    }
+    reader.readAsText(file)
+  }
 
   const handleResetProgress = () => {
     if (confirmReset) {
@@ -514,6 +546,35 @@ export default function Settings(props: SettingsProps) {
 
         {/* 5 — Données --------------------------------------------------- */}
         <Section eyebrow="données">
+          <Row
+            label="sauvegarde locale"
+            hint="exporte ou restaure profil, historique, records et ghosts"
+          >
+            <div className="set-data-actions">
+              <button type="button" className="set-btn" onClick={exportProgress}>
+                ↓ exporter
+              </button>
+              <button
+                type="button"
+                className="set-btn"
+                onClick={() => fileRef.current?.click()}
+              >
+                ↑ importer
+              </button>
+              <input
+                ref={fileRef}
+                type="file"
+                accept="application/json"
+                onChange={importProgress}
+                hidden
+              />
+            </div>
+          </Row>
+          {dataMsg && (
+            <p className={`set-data-msg is-${dataMsg.kind}`} role="status">
+              {dataMsg.text}
+            </p>
+          )}
           <Row
             label="réinitialiser l’apparence"
             hint="remet polices, curseur et affichage par défaut"

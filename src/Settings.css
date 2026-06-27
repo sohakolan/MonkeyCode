@@ -380,6 +380,24 @@
   border-color: var(--accent-dim);
 }
 
+/* --- sauvegarde locale ----------------------------------------------------- */
+
+.settings-page .set-data-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.settings-page .set-data-msg {
+  margin: 4px 0 0;
+  font-size: 12px;
+  text-align: right;
+  color: var(--ok);
+}
+
+.settings-page .set-data-msg.is-err {
+  color: var(--error);
+}
+
 /* --- zone de danger -------------------------------------------------------- */
 
 .settings-page .set-danger {
