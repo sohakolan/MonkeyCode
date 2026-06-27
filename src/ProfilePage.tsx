@@ -8,37 +8,13 @@ import type { PlayerState } from './player'
 import { topWeakKeys } from './player'
 import type { RunResult, Lang } from './types'
 import { LANG_LABEL } from './types'
-import { levelFromXp } from './progression'
+import { levelFromXp, rankFor, nextRank } from './progression'
 import { ACHIEVEMENTS } from './achievements'
 import { THEME_BY_ID } from './themes'
 
 interface ProfilePageProps {
   player: PlayerState
   history: RunResult[]
-}
-
-// --- Rangs « identité » dérivés du niveau (paliers maison, FR sobre). --------
-interface Tier {
-  at: number
-  name: string
-  glyph: string
-}
-const TIERS: Tier[] = [
-  { at: 1, name: 'novice', glyph: '◦' },
-  { at: 5, name: 'initié', glyph: '›' },
-  { at: 11, name: 'artisan', glyph: '▸' },
-  { at: 19, name: 'expert', glyph: '◆' },
-  { at: 30, name: 'maître', glyph: '✦' },
-  { at: 45, name: 'légende', glyph: '∞' },
-]
-function tierFor(level: number): Tier {
-  let t = TIERS[0]
-  for (const tier of TIERS) if (level >= tier.at) t = tier
-  return t
-}
-function nextTier(level: number): Tier | null {
-  for (const tier of TIERS) if (tier.at > level) return tier
-  return null
 }
 
 const round = (n: number) => Math.round(n)
@@ -62,8 +38,8 @@ function mean(xs: number[]): number {
 
 export default function ProfilePage({ player, history }: ProfilePageProps) {
   const lvl = useMemo(() => levelFromXp(player.xp), [player.xp])
-  const tier = tierFor(lvl.level)
-  const upcoming = nextTier(lvl.level)
+  const tier = rankFor(lvl.level)
+  const upcoming = nextRank(lvl.level)
 
   // Runs « rewrite » triés chronologiquement — base des moyennes et de la courbe.
   const rewriteRuns = useMemo(
@@ -244,7 +220,7 @@ export default function ProfilePage({ player, history }: ProfilePageProps) {
                 <span className="pp-badge-name">{a.name}</span>
                 <span className="pp-badge-desc">{a.desc}</span>
                 <span className="pp-badge-reward">
-                  +{a.xp} xp · +{a.coins} ¢
+                  +{a.xp} xp · +{a.coins} ◈
                 </span>
               </div>
             )
