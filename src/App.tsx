@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import Editor from './Editor'
+import Editor, { type EditorHandle } from './Editor'
 import TargetPanel from './TargetPanel'
 import Results from './Results'
 import Hud from './Hud'
@@ -16,7 +16,7 @@ import { loadHistory, saveHistory } from './history'
 import { resetProgress } from './data'
 import { CLOUD_ENABLED } from './cloudEnv'
 import CloudSync from './CloudSync'
-import CloudAccount from './CloudAccount'
+import AuthModal from './AuthModal'
 import { playKey, playError, playFinish, setSoundPrefs } from './sound'
 import { pickChallenge, pickDaily, pickDrill, dailyKey } from './snippets'
 import {
@@ -128,6 +128,8 @@ export default function App() {
   const [view, setView] = useState<View>('type')
   const [sprintOpen, setSprintOpen] = useState(false)
   const [accountOpen, setAccountOpen] = useState(false)
+  const [editorFocused, setEditorFocused] = useState(true)
+  const editorRef = useRef<EditorHandle>(null)
   const [showOnboarding, setShowOnboarding] = useState(
     () => !localStorage.getItem(ONBOARDED_KEY),
   )
@@ -416,15 +418,21 @@ export default function App() {
     return () => window.removeEventListener('keydown', onKey, true)
   }, [next, retry])
 
-  // Échap ferme la fiche compte.
+  // « tape pour commencer » : si l'éditeur a perdu le focus, une frappe normale
+  // (hors raccourci/navigation) le récupère immédiatement → l'utilisateur n'a
+  // jamais l'impression de taper dans le vide.
   useEffect(() => {
-    if (!accountOpen) return
+    if (view !== 'type' || editorFocused) return
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setAccountOpen(false)
+      if (modalOpenRef.current || statusRef.current === 'done') return
+      if (e.metaKey || e.ctrlKey || e.altKey) return
+      if (e.key.length === 1 || e.key === 'Enter' || e.key === 'Tab') {
+        editorRef.current?.focus()
+      }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [accountOpen])
+  }, [view, editorFocused])
 
   // Une modale ouverte OU une vue hors-jeu neutralise les raccourcis de course.
   modalOpenRef.current =
@@ -482,12 +490,12 @@ export default function App() {
         <div className="topbar-right">
           {CLOUD_ENABLED && (
             <button
-              className="iconbtn"
+              className="accountbtn"
               onClick={() => setAccountOpen(true)}
-              title="compte cloud — synchronise ta progression"
-              aria-label="compte"
+              title="crée un compte pour synchroniser ta progression sur tous tes appareils"
             >
-              ⛁
+              <span className="accountbtn-glyph">⛁</span>
+              <span className="accountbtn-label">compte</span>
             </button>
           )}
           <Hud player={player} onOpenProfile={() => goView('profile')} />
@@ -637,10 +645,13 @@ export default function App() {
             </main>
           ) : (
             <main className="stage panels" key={`${challenge.id}-${runKey}`}>
-              <section className="panel panel-target">
+              <section className="panel panel-target" aria-label="modèle à recopier">
                 <div className="panel-head">
                   <span className="panel-tag">cible</span>
                   <span className="panel-title">{challenge.title}</span>
+                  <span className="panel-readonly" title="ce panneau sert de modèle — tu tapes à droite">
+                    lecture seule
+                  </span>
                   {challenge.hint && <span className="panel-hint">{challenge.hint}</span>}
                 </div>
                 <div className="panel-body">
@@ -648,25 +659,50 @@ export default function App() {
                 </div>
               </section>
 
-              <section className="panel panel-editor">
+              <section
+                className={`panel panel-editor${editorFocused ? ' is-focused' : ''}`}
+                aria-label="zone de saisie"
+              >
                 <div className="panel-head">
                   <span className="panel-tag">éditeur</span>
                   <span className="panel-title">
-                    {config.game === 'refactor' ? 'transforme le code' : 'recopie le code'}
+                    {config.game === 'refactor'
+                      ? 'transforme le code ici'
+                      : 'recopie le code ici'}
                   </span>
-                  {config.input === 'vim' && vimMode && (
+                  {config.input === 'vim' && vimMode ? (
                     <span className={`vim-badge vim-${vimMode.split(' ')[0]}`}>{vimMode}</span>
+                  ) : (
+                    <span className={`panel-focus-dot${editorFocused ? ' on' : ''}`}>
+                      {editorFocused ? '● actif' : '○ inactif'}
+                    </span>
                   )}
                 </div>
                 <div className="panel-body">
                   <Editor
+                    ref={editorRef}
                     challenge={challenge}
                     config={config}
                     runKey={runKey}
                     onDoc={onDoc}
                     onActivity={onActivity}
                     onVimMode={setVimMode}
+                    onFocusChange={setEditorFocused}
                   />
+                  {!editorFocused && (
+                    <button
+                      type="button"
+                      className="editor-veil"
+                      onMouseDown={(e) => {
+                        e.preventDefault()
+                        editorRef.current?.focus()
+                      }}
+                    >
+                      <span className="editor-veil-caret" />
+                      <span className="editor-veil-text">clique ici ou tape pour commencer</span>
+                      <span className="editor-veil-sub">c’est dans ce panneau que tu écris</span>
+                    </button>
+                  )}
                 </div>
               </section>
             </main>
@@ -729,27 +765,7 @@ export default function App() {
       )}
 
       {accountOpen && CLOUD_ENABLED && (
-        <div
-          className="sheet-backdrop"
-          role="dialog"
-          aria-modal="true"
-          aria-label="compte cloud"
-          onClick={() => setAccountOpen(false)}
-        >
-          <div className="sheet" onClick={(e) => e.stopPropagation()}>
-            <div className="sheet-head">
-              <span className="sheet-title">compte cloud</span>
-              <button
-                className="sheet-x"
-                onClick={() => setAccountOpen(false)}
-                aria-label="fermer"
-              >
-                ✕
-              </button>
-            </div>
-            <CloudAccount />
-          </div>
-        </div>
+        <AuthModal onClose={() => setAccountOpen(false)} />
       )}
 
       {showOnboarding && (

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
 import { EditorState, Facet, Prec, RangeSetBuilder } from '@codemirror/state'
 import {
   Decoration,
@@ -100,6 +100,7 @@ interface Callbacks {
   onDoc: (doc: string, inserted: number, cursor: number) => void
   onActivity: () => void
   onVimMode: (mode: string) => void
+  onFocusChange?: (focused: boolean) => void
 }
 
 interface EditorProps extends Callbacks {
@@ -108,18 +109,22 @@ interface EditorProps extends Callbacks {
   runKey: number
 }
 
-export default function Editor({
-  challenge,
-  config,
-  runKey,
-  onDoc,
-  onActivity,
-  onVimMode,
-}: EditorProps) {
+export interface EditorHandle {
+  focus: () => void
+}
+
+const Editor = forwardRef<EditorHandle, EditorProps>(function Editor(
+  { challenge, config, runKey, onDoc, onActivity, onVimMode, onFocusChange },
+  ref,
+) {
   const hostRef = useRef<HTMLDivElement>(null)
   const viewRef = useRef<EditorView | null>(null)
-  const cbRef = useRef<Callbacks>({ onDoc, onActivity, onVimMode })
-  cbRef.current = { onDoc, onActivity, onVimMode }
+  const cbRef = useRef<Callbacks>({ onDoc, onActivity, onVimMode, onFocusChange })
+  cbRef.current = { onDoc, onActivity, onVimMode, onFocusChange }
+
+  useImperativeHandle(ref, () => ({
+    focus: () => viewRef.current?.focus(),
+  }), [])
 
   useEffect(() => {
     const view = new EditorView({ parent: hostRef.current! })
@@ -221,6 +226,7 @@ export default function Editor({
       Prec.high(keymap.of([{ key: 'Tab', run: smartTab }])),
       keymap.of([...defaultKeymap, ...historyKeymap]),
       EditorView.updateListener.of((update: ViewUpdate) => {
+        if (update.focusChanged) cbRef.current.onFocusChange?.(update.view.hasFocus)
         if (!update.docChanged) return
         let inserted = 0
         update.changes.iterChanges((_a, _b, _c, _d, text) => {
@@ -256,6 +262,7 @@ export default function Editor({
     }
 
     view.focus()
+    cbRef.current.onFocusChange?.(view.hasFocus)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [runKey, challenge.id, challenge.start, challenge.target, config.game, config.input, config.lang, config.autoIndent, config.ide])
 
@@ -271,4 +278,6 @@ export default function Editor({
       }}
     />
   )
-}
+})
+
+export default Editor

@@ -22,6 +22,31 @@ function randomHandle(userId: string): string {
   return `dev_${userId.slice(-6)}`
 }
 
+function sanitizeHandle(raw: string): string {
+  return raw.trim().slice(0, 20).replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '')
+}
+
+// Pseudo initial : celui choisi à l'inscription (`users.name`), nettoyé et rendu
+// unique au besoin ; sinon un identifiant dérivé de l'userId.
+async function initialHandle(
+  ctx: MutationCtx,
+  userId: Id<'users'>,
+): Promise<string> {
+  const user = await ctx.db.get(userId)
+  const wanted = sanitizeHandle(typeof user?.name === 'string' ? user.name : '')
+  if (wanted.length < 2) return randomHandle(userId)
+  let candidate = wanted
+  let n = 1
+  for (;;) {
+    const taken = await ctx.db
+      .query('profiles')
+      .withIndex('by_handle', (q) => q.eq('handle', candidate))
+      .unique()
+    if (!taken) return candidate
+    candidate = `${wanted.slice(0, 16)}_${n++}`
+  }
+}
+
 // Profil du joueur connecté (null si non authentifié).
 export const me = query({
   args: {},
@@ -44,7 +69,7 @@ export const ensure = mutation({
     if (existing) return existing._id
     return await ctx.db.insert('profiles', {
       userId,
-      handle: randomHandle(userId),
+      handle: await initialHandle(ctx, userId),
       xp: 0,
       level: 1,
       coins: 0,
