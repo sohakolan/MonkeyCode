@@ -7,8 +7,9 @@ import { useEffect, useState } from 'react'
 import './Settings.css'
 import type { Config, GameMode, InputMode, Lang } from './types'
 import { LANG_LABEL } from './types'
-import type { Prefs, FontId, CaretStyle, SoundPack } from './prefs'
+import type { Prefs, FontId, CaretStyle } from './prefs'
 import { FONTS } from './prefs'
+import { SOUND_PACKS, playKey } from './sound'
 import type { PlayerState } from './player'
 import { THEMES } from './themes'
 import { levelFromXp } from './progression'
@@ -442,14 +443,14 @@ export default function Settings(props: SettingsProps) {
 
         {/* 4 — Son ------------------------------------------------------- */}
         <Section eyebrow="son">
-          <Row label="son" hint="sons de frappe pendant le run">
+          <Row label="son de frappe" hint="vrai retour sonore mécanique à chaque touche">
             <Toggle
-              label="son"
+              label="son de frappe"
               on={config.sound}
               onToggle={() => applyConfig({ sound: !config.sound })}
             />
           </Row>
-          <Row label="volume">
+          <Row label="volume" hint="niveau du clavier et des effets">
             <Slider
               ariaLabel="volume du son"
               value={prefs.soundVolume}
@@ -460,18 +461,55 @@ export default function Settings(props: SettingsProps) {
               onChange={(n) => setPref('soundVolume', n)}
             />
           </Row>
-          <Row label="ambiance sonore">
-            <PillGroup<SoundPack>
-              ariaLabel="ambiance sonore"
-              value={prefs.soundPack}
-              onChange={(v) => setPref('soundPack', v)}
-              options={[
-                { value: 'click', label: 'clic' },
-                { value: 'typewriter', label: 'machine à écrire' },
-                { value: 'soft', label: 'doux' },
-              ]}
-            />
-          </Row>
+
+          <div className="set-field">
+            <div className="set-field-head">
+              <span className="set-row-title">clavier</span>
+              <span className="set-row-hint set-sound-help">
+                clique un pack pour l’écouter — d’autres se débloquent en montant de niveau
+              </span>
+            </div>
+            <div className="set-sounds">
+              {SOUND_PACKS.map((sp) => {
+                const unlocked = level >= sp.minLevel
+                const active = prefs.soundPack === sp.id
+                const onClick = () => {
+                  if (!unlocked) return
+                  setPref('soundPack', sp.id)
+                  // aperçu : on joue le pack immédiatement (le moteur lit la pref
+                  // au prochain rendu, donc on force ici via une frappe témoin).
+                  setTimeout(() => playKey(), 0)
+                }
+                return (
+                  <button
+                    key={sp.id}
+                    type="button"
+                    className={`set-sound${active ? ' is-active' : ''}${
+                      unlocked ? '' : ' is-locked'
+                    }`}
+                    aria-pressed={active}
+                    aria-label={`pack ${sp.label}${unlocked ? '' : `, verrouillé niveau ${sp.minLevel}`}`}
+                    disabled={!unlocked}
+                    onClick={onClick}
+                  >
+                    <span className="set-sound-top">
+                      <span className="set-sound-name">{sp.label}</span>
+                      {unlocked ? (
+                        active ? (
+                          <span className="set-sound-badge is-on">● actif</span>
+                        ) : (
+                          <span className="set-sound-badge">▶ écouter</span>
+                        )
+                      ) : (
+                        <span className="set-sound-badge is-lock">⬚ niv. {sp.minLevel}</span>
+                      )}
+                    </span>
+                    <span className="set-sound-hint">{sp.hint}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
         </Section>
 
         {/* 5 — Données --------------------------------------------------- */}

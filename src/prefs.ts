@@ -8,10 +8,11 @@
 // garde la personnalisation découplée du rendu.
 // =============================================================================
 import { useCallback, useEffect, useRef, useState } from 'react'
+import type { SoundPack } from './sound'
 
 export type CaretStyle = 'line' | 'block' | 'underline'
 export type FontId = 'jetbrains' | 'martian' | 'plex' | 'fira'
-export type SoundPack = 'click' | 'typewriter' | 'soft'
+export type { SoundPack }
 
 export interface FontDef {
   id: FontId
