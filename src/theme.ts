@@ -58,7 +58,7 @@ export const emberTheme = EditorView.theme(
       textUnderlineOffset: '4px',
     },
     '.cm-tooltip': {
-      backgroundColor: '#161a23',
+      backgroundColor: 'var(--bg-raise)',
       border: '1px solid var(--panel-edge)',
       borderRadius: '8px',
       overflow: 'hidden',
