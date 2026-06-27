@@ -22,14 +22,14 @@ function handleToEmail(handle: string): string {
 function validate(flow: Flow, handle: string, password: string): string | null {
   const h = handle.trim()
   if (flow === 'signUp') {
-    if (h.length < 3) return 'Choisis un pseudo d’au moins 3 caractères.'
-    if (h.length > 20) return 'Pseudo trop long (20 caractères max).'
+    if (h.length < 3) return 'choisis un pseudo d’au moins 3 caractères.'
+    if (h.length > 20) return 'pseudo trop long (20 caractères max).'
     if (!/^[a-zA-Z0-9_]+$/.test(h))
-      return 'Pseudo : lettres, chiffres et _ uniquement.'
-    if (password.length < 6) return 'Mot de passe : 6 caractères minimum.'
+      return 'pseudo : lettres, chiffres et _ uniquement.'
+    if (password.length < 6) return 'mot de passe : 6 caractères minimum.'
   } else {
-    if (!h) return 'Entre ton pseudo.'
-    if (!password) return 'Entre ton mot de passe.'
+    if (!h) return 'entre ton pseudo.'
+    if (!password) return 'entre ton mot de passe.'
   }
   return null
 }
@@ -75,8 +75,8 @@ export default function AuthModal({ onClose }: { onClose: () => void }) {
     } catch {
       setError(
         flow === 'signIn'
-          ? 'Pseudo ou mot de passe incorrect.'
-          : 'Ce pseudo est peut-être déjà pris — essaie d’en changer.',
+          ? 'pseudo ou mot de passe incorrect.'
+          : 'ce pseudo est peut-être déjà pris — essaie d’en changer.',
       )
     } finally {
       setBusy(false)
@@ -90,7 +90,7 @@ export default function AuthModal({ onClose }: { onClose: () => void }) {
       await signIn('anonymous')
       onClose()
     } catch {
-      setError('Connexion invité impossible pour le moment.')
+      setError('connexion invité impossible pour le moment.')
     } finally {
       setBusy(false)
     }
@@ -119,9 +119,9 @@ export default function AuthModal({ onClose }: { onClose: () => void }) {
           // --- déjà connecté --------------------------------------------------
           <div className="auth-connected">
             <div className="auth-check">✓</div>
-            <h2 className="auth-h2">Compte synchronisé</h2>
+            <h2 className="auth-h2">compte synchronisé</h2>
             <p className="auth-lead">
-              Ta progression — XP, niveaux, pièces, succès et records — est
+              ta progression — xp, niveaux, pièces, succès et records — est
               sauvegardée dans le cloud et te suit sur tous tes appareils.
             </p>
             <button className="auth-submit ghost" onClick={() => void signOut()}>
@@ -132,12 +132,12 @@ export default function AuthModal({ onClose }: { onClose: () => void }) {
           // --- inscription / connexion ---------------------------------------
           <>
             <h2 className="auth-h2">
-              {flow === 'signUp' ? 'Crée ton compte' : 'Content de te revoir'}
+              {flow === 'signUp' ? 'crée ton compte' : 'content de te revoir'}
             </h2>
             <p className="auth-lead">
               {flow === 'signUp'
-                ? 'Garde ta progression en sécurité et grimpe dans le classement mondial. Juste un pseudo et un mot de passe — pas d’e-mail.'
-                : 'Reconnecte-toi pour retrouver ta progression synchronisée.'}
+                ? 'garde ta progression en sécurité et grimpe dans le classement mondial. juste un pseudo et un mot de passe — pas d’e-mail.'
+                : 'reconnecte-toi pour retrouver ta progression synchronisée.'}
             </p>
 
             <div className="auth-tabs" role="tablist">
@@ -230,8 +230,8 @@ export default function AuthModal({ onClose }: { onClose: () => void }) {
               continuer en invité
             </button>
             <p className="auth-fineprint">
-              Tu peux jouer sans compte : ta progression reste sur cet appareil.
-              Crée un compte quand tu veux la synchroniser.
+              tu peux jouer sans compte : ta progression reste sur cet appareil.
+              crée un compte quand tu veux la synchroniser.
             </p>
           </>
         )}
