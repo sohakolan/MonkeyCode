@@ -2,19 +2,22 @@
 // Page profil — l'identité du joueur (niveau, rang, stats, courbe, succès,
 // touches faibles). Page plein écran (pas une modale). Tout-mono, ember terminal.
 // =============================================================================
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import './ProfilePage.css'
 import type { PlayerState } from './player'
 import { topWeakKeys } from './player'
 import type { RunResult, Lang } from './types'
 import { LANG_LABEL } from './types'
-import { levelFromXp, rankFor, nextRank } from './progression'
+import { levelFromXp, rankFor, nextRank, type Rank } from './progression'
 import { ACHIEVEMENTS } from './achievements'
 import { THEME_BY_ID } from './themes'
+import { NAME_MAX, BIO_MAX, type Identity } from './identity'
 
 interface ProfilePageProps {
   player: PlayerState
   history: RunResult[]
+  identity: Identity
+  setIdentity: (patch: Partial<Identity>) => void
 }
 
 const round = (n: number) => Math.round(n)
@@ -36,7 +39,12 @@ function mean(xs: number[]): number {
   return xs.reduce((a, b) => a + b, 0) / xs.length
 }
 
-export default function ProfilePage({ player, history }: ProfilePageProps) {
+export default function ProfilePage({
+  player,
+  history,
+  identity,
+  setIdentity,
+}: ProfilePageProps) {
   const lvl = useMemo(() => levelFromXp(player.xp), [player.xp])
   const tier = rankFor(lvl.level)
   const upcoming = nextRank(lvl.level)
@@ -86,11 +94,16 @@ export default function ProfilePage({ player, history }: ProfilePageProps) {
 
   return (
     <main className="profile-page" aria-label="profil du joueur">
-      <h1 className="pp-title">profil</h1>
+      {/* ── En-tête identité (nom, bio, profil public) ──────────────── */}
+      <IdentityHeader
+        identity={identity}
+        setIdentity={setIdentity}
+        tier={tier}
+      />
 
-      {/* ── Identité ─────────────────────────────────────────────────── */}
+      {/* ── Niveau & compteurs ──────────────────────────────────────── */}
       <section className="pp-identity" aria-labelledby="pp-identity-h">
-        <h2 id="pp-identity-h" className="pp-sr">identité</h2>
+        <h2 id="pp-identity-h" className="pp-sr">niveau et compteurs</h2>
         <div className="pp-id-left">
           <div className="pp-level-block">
             <span className="pp-level-num">{lvl.level}</span>
@@ -266,6 +279,124 @@ export default function ProfilePage({ player, history }: ProfilePageProps) {
         </div>
       </section>
     </main>
+  )
+}
+
+// --- En-tête identité (nom, bio, profil public, édition inline) --------------
+function IdentityHeader({
+  identity,
+  setIdentity,
+  tier,
+}: {
+  identity: Identity
+  setIdentity: (patch: Partial<Identity>) => void
+  tier: Rank
+}) {
+  const [editing, setEditing] = useState(false)
+  const [name, setName] = useState(identity.name)
+  const [bio, setBio] = useState(identity.bio)
+  const [isPublic, setIsPublic] = useState(identity.isPublic)
+
+  const displayName = identity.name.trim() || 'anonyme'
+  const initials = (identity.name.trim() || '?').slice(0, 2).toUpperCase()
+
+  const open = () => {
+    setName(identity.name)
+    setBio(identity.bio)
+    setIsPublic(identity.isPublic)
+    setEditing(true)
+  }
+
+  const save = () => {
+    setIdentity({
+      name: name.trim().slice(0, NAME_MAX),
+      bio: bio.trim().slice(0, BIO_MAX),
+      isPublic,
+    })
+    setEditing(false)
+  }
+
+  if (editing) {
+    return (
+      <section className="pp-header pp-header-edit" aria-label="modifier le profil">
+        <div className="pp-avatar" aria-hidden="true">
+          {initials}
+        </div>
+        <div className="pp-edit-fields">
+          <label className="pp-field">
+            <span className="pp-field-label">nom</span>
+            <input
+              className="pp-input"
+              type="text"
+              value={name}
+              maxLength={NAME_MAX}
+              placeholder="ton pseudo"
+              onChange={(e) => setName(e.target.value)}
+              autoFocus
+            />
+          </label>
+          <label className="pp-field">
+            <span className="pp-field-label">
+              description
+              <span className="pp-field-count">
+                {bio.length}/{BIO_MAX}
+              </span>
+            </span>
+            <textarea
+              className="pp-textarea"
+              value={bio}
+              maxLength={BIO_MAX}
+              rows={2}
+              placeholder="une ligne sur toi"
+              onChange={(e) => setBio(e.target.value)}
+            />
+          </label>
+          <label className="pp-toggle">
+            <input
+              type="checkbox"
+              checked={isPublic}
+              onChange={(e) => setIsPublic(e.target.checked)}
+            />
+            <span>profil public — visible au classement</span>
+          </label>
+          <div className="pp-edit-actions">
+            <button className="pp-btn pp-btn-primary" onClick={save}>
+              enregistrer
+            </button>
+            <button className="pp-btn" onClick={() => setEditing(false)}>
+              annuler
+            </button>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  return (
+    <section className="pp-header" aria-label="identité">
+      <div className="pp-avatar" aria-hidden="true">
+        {initials}
+      </div>
+      <div className="pp-header-meta">
+        <div className="pp-name-row">
+          <h1 className="pp-name">{displayName}</h1>
+          <span className="pp-rank-chip">
+            <span aria-hidden="true">{tier.glyph}</span> {tier.name}
+          </span>
+          <span className={`pp-vis ${identity.isPublic ? 'on' : 'off'}`}>
+            {identity.isPublic ? 'public' : 'privé'}
+          </span>
+        </div>
+        {identity.bio.trim() ? (
+          <p className="pp-bio">{identity.bio}</p>
+        ) : (
+          <p className="pp-bio pp-bio-empty">aucune description.</p>
+        )}
+      </div>
+      <button className="pp-btn pp-edit-btn" onClick={open}>
+        modifier
+      </button>
+    </section>
   )
 }
 

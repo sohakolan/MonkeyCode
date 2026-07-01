@@ -10,6 +10,7 @@ const KEYS = [
   'monkeycode.ghosts.v1',
   'monkeycode.sprintBest.v1',
   'monkeycode.config.v1',
+  'monkeycode.identity.v1',
 ] as const
 
 interface Backup {

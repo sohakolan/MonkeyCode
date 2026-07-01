@@ -49,6 +49,17 @@ const SNIPPETS: Record<Lang, Completion[]> = {
     snip('switch ${expr} {\ncase ${val}:\n\t${}\n}', { label: 'switch', detail: 'switch', type: 'keyword' }),
     snip('fmt.Println(${value})', { label: 'println', detail: 'fmt.Println', type: 'function' }),
   ],
+  c: [
+    snip('${ret} ${name}(${params}) {\n\t${}\n}', { label: 'fn', detail: 'fonction', type: 'keyword' }),
+    snip('for (int ${i} = 0; ${i} < ${n}; ${i}++) {\n\t${}\n}', { label: 'for', detail: 'boucle', type: 'keyword' }),
+    snip('while (${cond}) {\n\t${}\n}', { label: 'while', detail: 'while', type: 'keyword' }),
+    snip('if (${cond}) {\n\t${}\n}', { label: 'if', detail: 'condition', type: 'keyword' }),
+    snip('switch (${expr}) {\ncase ${val}:\n\t${}\n\tbreak;\n}', { label: 'switch', detail: 'switch', type: 'keyword' }),
+    snip('struct ${Name} {\n\t${}\n};', { label: 'struct', detail: 'struct', type: 'type' }),
+    snip('typedef struct {\n\t${}\n} ${Name};', { label: 'tdstruct', detail: 'typedef struct', type: 'type' }),
+    snip('printf("${%d\\n}", ${value});', { label: 'printf', detail: 'printf', type: 'function' }),
+    snip('#include <${stdio.h}>', { label: 'inc', detail: 'include', type: 'keyword' }),
+  ],
 }
 
 const WORD_RE = /[A-Za-z_$][A-Za-z0-9_$]*/g

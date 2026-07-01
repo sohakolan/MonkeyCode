@@ -157,6 +157,110 @@ body::after {
   background: var(--panel-edge);
 }
 
+/* sélecteur de langage central (façon monkeytype) */
+.cfg-lang {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 12.5px;
+  padding: 6px 11px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.15s ease;
+}
+
+.cfg-lang:hover {
+  background: rgba(var(--accent-rgb), 0.12);
+}
+
+.cfg-lang-glyph {
+  color: var(--ink-faint);
+  font-size: 12px;
+}
+
+/* modale de choix du langage */
+.langpick {
+  position: relative;
+  width: min(360px, 100%);
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.9);
+  animation: rise 0.25s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+
+.langpick-search {
+  width: 100%;
+  appearance: none;
+  background: var(--bg-raise);
+  border: 1px solid var(--panel-edge);
+  border-radius: 8px;
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 14px;
+  padding: 9px 12px;
+  outline: none;
+}
+
+.langpick-search:focus {
+  border-color: rgba(var(--accent-rgb), 0.5);
+}
+
+.langpick-list {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 300px;
+  overflow: auto;
+}
+
+.langpick-item {
+  width: 100%;
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--ink-faint);
+  font-family: var(--mono);
+  font-size: 13.5px;
+  text-align: left;
+  padding: 9px 11px;
+  border-radius: 7px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.langpick-item.active {
+  background: rgba(var(--accent-rgb), 0.1);
+  color: var(--ink);
+}
+
+.langpick-item.current .langpick-name {
+  color: var(--accent);
+}
+
+.langpick-tag {
+  font-size: 11px;
+  color: var(--ink-faint);
+}
+
+.langpick-empty {
+  color: var(--ink-faint);
+  font-size: 13px;
+  padding: 12px 11px;
+  text-align: center;
+}
+
 /* stats live ----------------------------------------------------------------- */
 .livebar {
   display: flex;

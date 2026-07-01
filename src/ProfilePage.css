@@ -27,16 +27,6 @@
   border: 0;
 }
 
-.profile-page .pp-title {
-  margin: 0;
-  font-family: var(--display);
-  font-size: 24px;
-  font-weight: 800;
-  letter-spacing: -0.01em;
-  text-transform: lowercase;
-  color: var(--fg);
-}
-
 /* --- Eyebrows de section --------------------------------------------------- */
 .profile-page .pp-eyebrow {
   display: flex;
@@ -74,6 +64,176 @@
   border: 1px solid var(--panel-edge);
   border-radius: 14px;
   padding: 20px;
+}
+
+/* --- En-tête identité (nom, bio, profil public) ---------------------------- */
+.profile-page .pp-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  border-radius: 14px;
+  padding: 24px;
+}
+
+.profile-page .pp-avatar {
+  flex: none;
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  font-family: var(--display);
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.1);
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
+}
+
+.profile-page .pp-header-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-page .pp-name-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.profile-page .pp-name {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--fg);
+  word-break: break-word;
+}
+
+.profile-page .pp-rank-chip {
+  font-size: 12px;
+  color: var(--ink-faint);
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--panel-edge);
+}
+
+.profile-page .pp-vis {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  padding: 3px 9px;
+  border-radius: 999px;
+}
+.profile-page .pp-vis.on {
+  color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.12);
+}
+.profile-page .pp-vis.off {
+  color: var(--ink-faint);
+  border: 1px solid var(--panel-edge);
+}
+
+.profile-page .pp-bio {
+  margin: 10px 0 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--ink);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.profile-page .pp-bio-empty {
+  color: var(--ink-faint);
+  font-style: italic;
+}
+
+.profile-page .pp-edit-btn {
+  flex: none;
+}
+
+/* boutons & champs d'édition */
+.profile-page .pp-btn {
+  appearance: none;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--panel-edge);
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.profile-page .pp-btn:hover {
+  border-color: rgba(var(--accent-rgb), 0.5);
+  color: var(--fg);
+}
+.profile-page .pp-btn-primary {
+  background: rgba(var(--accent-rgb), 0.14);
+  border-color: rgba(var(--accent-rgb), 0.4);
+  color: var(--accent);
+}
+
+.profile-page .pp-edit-fields {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.profile-page .pp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.profile-page .pp-field-label {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: lowercase;
+  color: var(--ink-faint);
+}
+.profile-page .pp-field-count {
+  margin-left: auto;
+}
+.profile-page .pp-input,
+.profile-page .pp-textarea {
+  width: 100%;
+  appearance: none;
+  background: var(--bg-raise, var(--bg));
+  border: 1px solid var(--panel-edge);
+  border-radius: 8px;
+  color: var(--fg);
+  font-family: var(--mono);
+  font-size: 14px;
+  padding: 9px 12px;
+  outline: none;
+  resize: vertical;
+}
+.profile-page .pp-input:focus,
+.profile-page .pp-textarea:focus {
+  border-color: rgba(var(--accent-rgb), 0.5);
+}
+.profile-page .pp-toggle {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13px;
+  color: var(--ink);
+  cursor: pointer;
+}
+.profile-page .pp-toggle input {
+  accent-color: var(--accent);
+  width: 15px;
+  height: 15px;
+}
+.profile-page .pp-edit-actions {
+  display: flex;
+  gap: 10px;
 }
 
 /* --- Identité -------------------------------------------------------------- */

@@ -8,10 +8,12 @@ import Settings from './Settings'
 import Leaderboard from './Leaderboard'
 import Sprint from './Sprint'
 import Onboarding from './Onboarding'
+import LangPicker from './LangPicker'
 
 const ONBOARDED_KEY = 'monkeycode.onboarded.v1'
 import { usePlayer, dailyAvailable, type RunReward } from './player'
 import { usePrefs } from './prefs'
+import { useIdentity } from './identity'
 import { loadHistory, saveHistory } from './history'
 import { resetProgress } from './data'
 import { CLOUD_ENABLED } from './cloudEnv'
@@ -27,7 +29,7 @@ import {
   type GhostPoint,
   type GhostTimeline,
 } from './ghost'
-import type { Challenge, Config, GameMode, InputMode, Lang, RunResult } from './types'
+import type { Challenge, Config, GameMode, InputMode, RunResult } from './types'
 import { LANG_LABEL } from './types'
 
 const CONFIG_KEY = 'monkeycode.config.v1'
@@ -127,6 +129,7 @@ export default function App() {
   const [reward, setReward] = useState<RunReward | null>(null)
   const [view, setView] = useState<View>('type')
   const [sprintOpen, setSprintOpen] = useState(false)
+  const [langPickerOpen, setLangPickerOpen] = useState(false)
   const [accountOpen, setAccountOpen] = useState(false)
   const [editorFocused, setEditorFocused] = useState(true)
   const editorRef = useRef<EditorHandle>(null)
@@ -139,6 +142,7 @@ export default function App() {
 
   const { player, recordRun, buyTheme, equipTheme, awardSprint } = usePlayer()
   const { prefs, setPref, resetPrefs } = usePrefs()
+  const { identity, setIdentity } = useIdentity()
   const recordRunRef = useRef(recordRun)
   recordRunRef.current = recordRun
   const quickRestartRef = useRef(prefs.quickRestart)
@@ -436,7 +440,7 @@ export default function App() {
 
   // Une modale ouverte OU une vue hors-jeu neutralise les raccourcis de course.
   modalOpenRef.current =
-    sprintOpen || showOnboarding || accountOpen || view !== 'type'
+    sprintOpen || showOnboarding || accountOpen || langPickerOpen || view !== 'type'
 
   const dailyReady = dailyAvailable(player, dailyKey())
   const target = challenge.target
@@ -492,7 +496,7 @@ export default function App() {
             <button
               className="accountbtn"
               onClick={() => setAccountOpen(true)}
-              title="crée un compte pour synchroniser ta progression sur tous tes appareils"
+              title="synchronise ta progression entre appareils"
             >
               <span className="accountbtn-glyph">⛁</span>
               <span className="accountbtn-label">compte</span>
@@ -518,17 +522,15 @@ export default function App() {
                 ))}
               </div>
               <span className="cfg-sep" />
-              <div className="cfg-group">
-                {(['ts', 'py', 'rs', 'go'] as Lang[]).map((l) => (
-                  <button
-                    key={l}
-                    className={config.lang === l ? 'cfg on' : 'cfg'}
-                    onClick={() => applyConfig({ lang: l })}
-                  >
-                    {LANG_LABEL[l]}
-                  </button>
-                ))}
-              </div>
+              <button
+                className="cfg-lang"
+                onClick={() => setLangPickerOpen(true)}
+                title="changer de langage"
+                aria-haspopup="dialog"
+              >
+                <span className="cfg-lang-glyph" aria-hidden="true">@</span>
+                {LANG_LABEL[config.lang]}
+              </button>
               <span className="cfg-sep" />
               <div className="cfg-group">
                 {(['normal', 'vim'] as InputMode[]).map((m) => (
@@ -545,7 +547,7 @@ export default function App() {
               <button
                 className={config.ide ? 'cfg on' : 'cfg'}
                 onClick={() => applyConfig({ ide: !config.ide })}
-                title="auto-fermeture des brackets, complétion (tab) et snippets, comme dans un IDE"
+                title="auto-fermeture des brackets, complétion et snippets (tab)"
               >
                 ide
               </button>
@@ -649,7 +651,7 @@ export default function App() {
                 <div className="panel-head">
                   <span className="panel-tag">cible</span>
                   <span className="panel-title">{challenge.title}</span>
-                  <span className="panel-readonly" title="ce panneau sert de modèle — tu tapes à droite">
+                  <span className="panel-readonly" title="modèle à recopier — tu tapes à droite">
                     lecture seule
                   </span>
                   {challenge.hint && <span className="panel-hint">{challenge.hint}</span>}
@@ -700,7 +702,7 @@ export default function App() {
                     >
                       <span className="editor-veil-caret" />
                       <span className="editor-veil-text">clique ici ou tape pour commencer</span>
-                      <span className="editor-veil-sub">c’est dans ce panneau que tu écris</span>
+                      <span className="editor-veil-sub">tu écris dans ce panneau</span>
                     </button>
                   )}
                 </div>
@@ -740,7 +742,12 @@ export default function App() {
 
       {view === 'profile' && (
         <main className="view">
-          <ProfilePage player={player} history={profileHistory} />
+          <ProfilePage
+            player={player}
+            history={profileHistory}
+            identity={identity}
+            setIdentity={setIdentity}
+          />
         </main>
       )}
 
@@ -762,6 +769,17 @@ export default function App() {
 
       {sprintOpen && (
         <Sprint config={config} onAward={awardSprint} onClose={() => setSprintOpen(false)} />
+      )}
+
+      {langPickerOpen && (
+        <LangPicker
+          current={config.lang}
+          onPick={(lang) => {
+            applyConfig({ lang })
+            setLangPickerOpen(false)
+          }}
+          onClose={() => setLangPickerOpen(false)}
+        />
       )}
 
       {accountOpen && CLOUD_ENABLED && (

@@ -11,23 +11,23 @@ interface Step {
 const STEPS: Step[] = [
   {
     glyph: '⌨',
-    title: 'recopie, à droite',
-    text: 'le panneau de gauche est le modèle (lecture seule). tu tapes dans l’éditeur de droite : vitesse, précision et régularité sont mesurées en direct.',
+    title: 'recopie à droite',
+    text: 'le panneau de gauche est le modèle, en lecture seule. tu tapes dans l’éditeur de droite. vitesse, précision et régularité sont mesurées pendant la frappe.',
   },
   {
     glyph: '⚙',
     title: 'choisis ton terrain',
-    text: 'langage (ts · py · rust · go), mode réécrire ou modifier, clavier normal ou vim, assistance ide (auto-complétion, snippets) et son de frappe mécanique.',
+    text: 'cinq langages (ts, py, rust, go, c), mode réécrire ou modifier, clavier normal ou vim, assistance ide et son de frappe.',
   },
   {
     glyph: '✦',
-    title: 'progresse & débloque',
-    text: 'gagne xp, niveaux, pièces et succès. monte en niveau pour débloquer des thèmes et des sons de clavier. tente le ▶ sprint, le ⚡ défi du jour et la course contre ton ghost.',
+    title: 'progresse',
+    text: 'les runs rapportent xp, niveaux, pièces et succès. monte en niveau pour débloquer thèmes et sons. il y a aussi le sprint, le défi du jour et la course contre ton ghost.',
   },
   {
     glyph: '☁',
     title: 'garde ta progression',
-    text: 'joue sans compte (tout reste sur cet appareil), ou crée un compte avec un pseudo + mot de passe pour synchroniser et entrer au classement mondial.',
+    text: 'sans compte, tout reste sur cet appareil. avec un compte (pseudo + mot de passe), ta progression se synchronise et tu entres au classement.',
   },
 ]
 
@@ -53,8 +53,8 @@ export default function Onboarding({ onClose }: { onClose: () => void }) {
           monkey<span className="logo-accent">_code</span>
         </div>
         <p className="onb-lead">
-          le monkeytype du code — muscle ta vitesse de frappe sur du vrai code, pas
-          du texte. quatre langages, des modes, et une vraie progression.
+          un entraîneur de frappe sur du vrai code, pas du texte. cinq langages,
+          deux modes, et une progression locale.
         </p>
 
         <div className="onb-steps">

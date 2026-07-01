@@ -1,6 +1,6 @@
 export type GameMode = 'rewrite' | 'refactor'
 export type InputMode = 'normal' | 'vim'
-export type Lang = 'ts' | 'py' | 'rs' | 'go'
+export type Lang = 'ts' | 'py' | 'rs' | 'go' | 'c'
 
 export interface RewriteSnippet {
   id: string
@@ -57,6 +57,10 @@ export const LANG_LABEL: Record<Lang, string> = {
   py: 'python',
   rs: 'rust',
   go: 'go',
+  c: 'c',
 }
 
-export const INDENT: Record<Lang, number> = { ts: 2, py: 4, rs: 4, go: 4 }
+// Ordre d'affichage dans le sélecteur de langage.
+export const LANGS: Lang[] = ['ts', 'py', 'rs', 'go', 'c']
+
+export const INDENT: Record<Lang, number> = { ts: 2, py: 4, rs: 4, go: 4, c: 4 }

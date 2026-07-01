@@ -31,6 +31,7 @@ import { javascript } from '@codemirror/lang-javascript'
 import { python } from '@codemirror/lang-python'
 import { rust } from '@codemirror/lang-rust'
 import { go } from '@codemirror/lang-go'
+import { cpp } from '@codemirror/lang-cpp'
 import { vim, getCM } from '@replit/codemirror-vim'
 import { emberTheme, emberHighlight } from './theme'
 import type { Challenge, Config, Lang } from './types'
@@ -93,6 +94,8 @@ function langExtension(lang: Lang) {
       return rust()
     case 'go':
       return go()
+    case 'c':
+      return cpp()
   }
 }
 

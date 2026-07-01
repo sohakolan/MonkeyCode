@@ -325,12 +325,131 @@ func (s *Stack[T]) Pop() (T, bool) {
     return counts
 }`,
   },
+  // ----- C -----
+  {
+    id: 'c-swap',
+    lang: 'c',
+    title: 'swap',
+    code: `void swap(int *a, int *b) {
+    int tmp = *a;
+    *a = *b;
+    *b = tmp;
+}`,
+  },
+  {
+    id: 'c-fib',
+    lang: 'c',
+    title: 'fib',
+    code: `long fib(int n) {
+    long a = 0, b = 1;
+    for (int i = 0; i < n; i++) {
+        long next = a + b;
+        a = b;
+        b = next;
+    }
+    return a;
+}`,
+  },
+  {
+    id: 'c-reverse',
+    lang: 'c',
+    title: 'reverse',
+    code: `void reverse(int *arr, int len) {
+    for (int i = 0, j = len - 1; i < j; i++, j--) {
+        int tmp = arr[i];
+        arr[i] = arr[j];
+        arr[j] = tmp;
+    }
+}`,
+  },
+  {
+    id: 'c-bsearch',
+    lang: 'c',
+    title: 'binary_search',
+    code: `int binary_search(const int *arr, int len, int target) {
+    int lo = 0, hi = len - 1;
+    while (lo <= hi) {
+        int mid = lo + (hi - lo) / 2;
+        if (arr[mid] == target) return mid;
+        if (arr[mid] < target) lo = mid + 1;
+        else hi = mid - 1;
+    }
+    return -1;
+}`,
+  },
+  {
+    id: 'c-struct',
+    lang: 'c',
+    title: 'struct_point',
+    code: `typedef struct {
+    double x;
+    double y;
+} Point;
+
+double distance(Point a, Point b) {
+    double dx = a.x - b.x;
+    double dy = a.y - b.y;
+    return sqrt(dx * dx + dy * dy);
+}`,
+  },
+  {
+    id: 'c-count',
+    lang: 'c',
+    title: 'count_words',
+    code: `int count_words(const char *s) {
+    int count = 0, in_word = 0;
+    for (; *s; s++) {
+        if (isspace(*s)) {
+            in_word = 0;
+        } else if (!in_word) {
+            in_word = 1;
+            count++;
+        }
+    }
+    return count;
+}`,
+  },
+
   {
     id: 'ts-pipe',
     lang: 'ts',
     title: 'pipe',
     code: `function pipe<T>(...fns: Array<(x: T) => T>) {
   return (input: T) => fns.reduce((acc, fn) => fn(acc), input)
+}`,
+  },
+  {
+    id: 'ts-clamp',
+    lang: 'ts',
+    title: 'clamp',
+    code: `function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max)
+}`,
+  },
+  {
+    id: 'ts-uniqueby',
+    lang: 'ts',
+    title: 'unique_by',
+    code: `function uniqueBy<T, K>(items: T[], key: (item: T) => K): T[] {
+  const seen = new Set<K>()
+  return items.filter((item) => {
+    const k = key(item)
+    if (seen.has(k)) return false
+    seen.add(k)
+    return true
+  })
+}`,
+  },
+  {
+    id: 'ts-memoize',
+    lang: 'ts',
+    title: 'memoize',
+    code: `function memoize<A, R>(fn: (arg: A) => R): (arg: A) => R {
+  const cache = new Map<A, R>()
+  return (arg) => {
+    if (!cache.has(arg)) cache.set(arg, fn(arg))
+    return cache.get(arg)!
+  }
 }`,
   },
   {
@@ -812,6 +931,70 @@ func hasZero(values []int) bool {
     return data, nil
 }`,
   },
+  // ----- C -----
+  {
+    id: 'c-early',
+    lang: 'c',
+    title: 'early_return',
+    hint: 'inverse les conditions pour des early returns',
+    before: `int handle(Request *req) {
+    if (req != NULL) {
+        if (req->len > 0) {
+            process(req);
+            return 0;
+        } else {
+            return -1;
+        }
+    } else {
+        return -2;
+    }
+}`,
+    after: `int handle(Request *req) {
+    if (req == NULL) return -2;
+    if (req->len == 0) return -1;
+    process(req);
+    return 0;
+}`,
+  },
+  {
+    id: 'c-forwhile',
+    lang: 'c',
+    title: 'while → for',
+    hint: 'compacte la boucle while en for',
+    before: `int sum(const int *arr, int len) {
+    int total = 0;
+    int i = 0;
+    while (i < len) {
+        total += arr[i];
+        i++;
+    }
+    return total;
+}`,
+    after: `int sum(const int *arr, int len) {
+    int total = 0;
+    for (int i = 0; i < len; i++) {
+        total += arr[i];
+    }
+    return total;
+}`,
+  },
+  {
+    id: 'c-ternary',
+    lang: 'c',
+    title: 'ternary',
+    hint: 'remplace le if/else par un ternaire',
+    before: `int max(int a, int b) {
+    if (a > b) {
+        return a;
+    } else {
+        return b;
+    }
+}`,
+    after: `int max(int a, int b) {
+    return a > b ? a : b;
+}`,
+  },
+
   {
     id: 'ts-loop-map',
     lang: 'ts',
@@ -902,6 +1085,13 @@ export const SPRINT: RewriteSnippet[] = [
   { id: 'sp-go-5', lang: 'go', title: 'defer', code: `defer file.Close()` },
   { id: 'sp-go-6', lang: 'go', title: 'sort', code: `sort.Slice(items, func(i, j int) bool {\n    return items[i].N < items[j].N\n})` },
   { id: 'sp-go-7', lang: 'go', title: 'goroutine', code: `go func() {\n    results <- compute(job)\n}()` },
+  { id: 'sp-c-1', lang: 'c', title: 'for', code: `for (int i = 0; i < n; i++) {\n    total += arr[i];\n}` },
+  { id: 'sp-c-2', lang: 'c', title: 'printf', code: `printf("%d: %s\\n", i, name);` },
+  { id: 'sp-c-3', lang: 'c', title: 'malloc', code: `int *buf = malloc(n * sizeof(int));` },
+  { id: 'sp-c-4', lang: 'c', title: 'guard', code: `if (ptr == NULL) return -1;` },
+  { id: 'sp-c-5', lang: 'c', title: 'swap', code: `int tmp = a; a = b; b = tmp;` },
+  { id: 'sp-c-6', lang: 'c', title: 'while', code: `while (*s != '\\0') {\n    s++;\n}` },
+  { id: 'sp-c-7', lang: 'c', title: 'struct', code: `struct Node { int value; struct Node *next; };` },
 ]
 
 /** Tire un snippet court de sprint pour une langue, en évitant le précédent. */
